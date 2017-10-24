@@ -5,10 +5,10 @@ const int Key4 = 5;
 const int Key5 = 6;
 const int Key6 = 7;
 const int Key7 = 8;
-const int Key8 = 9;
-const int ONES = 10;
-const int TWOS = 11;
-const int FOURS = 12;
+//const int Key8 = 9;
+const int ONES = 9;
+const int TWOS = 10;
+const int FOURS = 11;
 int input = 0;
 void setup() {
   // put your setup code here, to run once:
@@ -20,7 +20,7 @@ void setup() {
   pinMode(Key5, INPUT);
   pinMode(Key6, INPUT);
   pinMode(Key7, INPUT);
-  pinMode(Key8, INPUT);
+//  pinMode(Key8, INPUT);
 
   pinMode(ONES, OUTPUT);
   pinMode(TWOS, OUTPUT);
