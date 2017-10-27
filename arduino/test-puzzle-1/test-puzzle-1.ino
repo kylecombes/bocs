@@ -68,6 +68,7 @@ void processKeyInput(char c) {
   if (c == '#') { // Answer submitted
     if (input.equals(answer)) { // Correct
       setText("Correct!", BOTTOM_LINE);
+      myservo.write(50);
 //      state = ANSWERED; // TODO Do this better (don't use delay)
     } else {
       setText("Incorrect", BOTTOM_LINE);
