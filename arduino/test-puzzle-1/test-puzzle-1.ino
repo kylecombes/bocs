@@ -65,6 +65,8 @@ void loop() {
 
 void processKeyInput(char c) {
 
+  Serial.println("{\"event_id\": 0, \"data\": \"" + (String)c + "\"}");
+
   if (c == '#') { // Answer submitted
     if (input.equals(answer)) { // Correct
       setText("Correct!", BOTTOM_LINE);
