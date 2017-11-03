@@ -23,7 +23,7 @@ byte colPins[COLS] = {10, 9, 8}; //connect to the column pinouts of the keypad
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 LiquidCrystal_I2C  lcd(0x3D,2,1,0,4,5,6,7); // 0x3D is the I2C bus address for an unmodified backpack -- THIS MAY CHANGE BETWEEN DISPLAYS
-StaticJsonBuffer<800> jsonBuffer; // 1KB of 2KB total
+StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max with our other memory requirements)
 
 #define TOP_LINE 0
 #define BOTTOM_LINE 1
@@ -39,7 +39,6 @@ void setup() {
   // Configure LCD module
   lcd.begin(LCD_LINE_LENGTH, LCD_LINE_COUNT); // for 16 x 2 LCD module
   lcd.setBacklightPin(3,POSITIVE);
-  lcd.setBacklight(HIGH);
   Serial.begin(9600);
 }
 
@@ -54,12 +53,16 @@ void loop() {
   if (Serial.available() > 0) {
     JsonObject& root = jsonBuffer.parse(Serial);
     if (root.success()) { // Successfully parsed JSON from computer
-//      root.printTo(Serial);
       if (root.containsKey("0")) { // First line
         setText(root["0"], TOP_LINE);
       }
       if (root.containsKey("1")) { // Second line
         setText(root["1"], BOTTOM_LINE);
+      }
+      if (root.containsKey("bl")) {
+        String bl = root["bl"];
+        bool backlightOn = bl.equals("1");
+        lcd.setBacklight(backlightOn ? HIGH : LOW);
       }
     }
   }
@@ -70,11 +73,11 @@ void loop() {
 
 void processKeyInput(char c) {
 
-  JsonObject& js = jsonBuffer.createObject();
-  js["event_id"] = 0;
-  js["data"] = c-48;
-  js.printTo(Serial);
-  Serial.println();
+//  JsonObject& js = jsonBuffer.createObject();
+//  js["event_id"] = 0;
+//  js["data"] = c-48;
+//  js.printTo(Serial);
+  Serial.println("{\"event_id\": 0, \"data\": \"" + (String)c + "\"}");
 
 }
 

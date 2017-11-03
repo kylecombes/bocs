@@ -1,6 +1,7 @@
 from serial import Serial
 from threading import Thread
 import json
+import time
 from raspi.arduino_comm_event import ArduinoCommEvent
 
 """
@@ -19,11 +20,14 @@ class ArduinoComm:
     :param port (string) the serial port to connect to
     :param baudrate (int) the baudrate to use (defaults to 9600)
     """
-    def __init__(self, event_callback, port='/dev/ttyACM', baudrate=9600):
+    def __init__(self, event_callback, port='/dev/ttyACM0', baudrate=9600):
         self.event_callback = event_callback
         self.port = port
         self.baudrate = baudrate
         self.cxn = Serial(self.port, baudrate=self.baudrate)
+        time.sleep(2)  # Wait for serial connection to open TODO Better way of doing this
+        self.cxn.flushOutput()
+        self.cxn.flushInput()
         self.start_listening()
 
     def start_listening(self):
@@ -54,16 +58,15 @@ class ArduinoCommThread(Thread):
     def run(self):
 
         while self.do_run:
-            while self.cxn.inWaiting() < 1 and self.do_run:
-                pass  # Might want to sleep here
-
-            data = self.cxn.readline()
-            if data:  # Make sure the data is valid before trying to parse it
-                try:
-                    data = data.decode('UTF-8')[0:-1]
-                    self.process_event(data)
-                except UnicodeDecodeError:
-                    pass
+            while self.cxn.inWaiting() > 1:
+                data = self.cxn.readline()
+                if data:  # Make sure the data is valid before trying to parse it
+                    try:
+                        data = data.decode('UTF-8')[0:-2]
+                        self.process_event(data)
+                    except UnicodeDecodeError:
+                        pass
+            # self.cxn.flushInput()
 
     """
     Handles deserializing the event data and calling the event callback.

@@ -5,7 +5,7 @@ from raspi.available_io import *
 
 class BirthdayParadoxPuzzle:
 
-    PROMPT = "How many 3 are needed ?"
+    PROMPT = "How many people are needed in a room for the probability that 2 have the same birthday to be greater than 50%?"
     LINE_2_PREFIX = "Input: "
     guess = ""
     ANSWER = "23"
