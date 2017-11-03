@@ -3,39 +3,32 @@
 #include <Wire.h>
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
+#include <ArduinoJson.h>
 
 #define LCD_LINE_LENGTH 16
 #define LCD_LINE_COUNT 2
 #define LCD_SCROLL_DELTA 3
 
-// States
-#define AWAITING_INPUT 0
-#define ANSWERED 1
-
 Servo myservo;  // create servo object to control a servo
-const byte rows = 4; //four rows
-const byte cols = 3; //three columns
-char keys[rows][cols] = {
+#define ROWS 4 //four ROWS
+#define COLS 3 //three columns
+char keys[ROWS][COLS] = {
   {'1', '2', '3'},
   {'4', '5', '6'},
   {'7', '8', '9'},
   {'*', '0', '#'}
 };
-byte rowPins[rows] = {5, 4, 3, 2}; //connect to the row pinouts of the keypad
-byte colPins[cols] = {10, 9, 8}; //connect to the column pinouts of the keypad
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
+byte rowPins[ROWS] = {5, 4, 3, 2}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {10, 9, 8}; //connect to the column pinouts of the keypad
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 LiquidCrystal_I2C  lcd(0x3D,2,1,0,4,5,6,7); // 0x3D is the I2C bus address for an unmodified backpack -- THIS MAY CHANGE BETWEEN DISPLAYS
+StaticJsonBuffer<800> jsonBuffer; // 1KB of 2KB total
 
 #define TOP_LINE 0
 #define BOTTOM_LINE 1
 
 String lines[2];
-String answer = "23";
-String question = "How two share a birthday to be at least 50%?";
-String secondLinePrefix = "Input: ";
-int state = AWAITING_INPUT;
-String input = "";
 
 void setup() {
   // Configure keypad and door actuator
@@ -48,40 +41,41 @@ void setup() {
   lcd.setBacklightPin(3,POSITIVE);
   lcd.setBacklight(HIGH);
   Serial.begin(9600);
-  setText(question, TOP_LINE);
-  setText(secondLinePrefix, BOTTOM_LINE);
 }
 
 void loop() {
   // Process any key input
   char key = keypad.getKey();
-  if (state == AWAITING_INPUT && key != 0) {
+  if (key != 0) {
     processKeyInput(key);
   }
-
+  
+  // Get any messages coming from the computer
+  if (Serial.available() > 0) {
+    JsonObject& root = jsonBuffer.parse(Serial);
+    if (root.success()) { // Successfully parsed JSON from computer
+//      root.printTo(Serial);
+      if (root.containsKey("0")) { // First line
+        setText(root["0"], TOP_LINE);
+      }
+      if (root.containsKey("1")) { // Second line
+        setText(root["1"], BOTTOM_LINE);
+      }
+    }
+  }
+  
   // Update message on LCD if necessary
   maybeUpdateDisplay();
 }
 
 void processKeyInput(char c) {
 
-  Serial.println("{\"event_id\": 0, \"data\": \"" + (String)c + "\"}");
+  JsonObject& js = jsonBuffer.createObject();
+  js["event_id"] = 0;
+  js["data"] = c-48;
+  js.printTo(Serial);
+  Serial.println();
 
-  if (c == '#') { // Answer submitted
-    if (input.equals(answer)) { // Correct
-      setText("Correct!", BOTTOM_LINE);
-      myservo.write(50);
-//      state = ANSWERED; // TODO Do this better (don't use delay)
-    } else {
-      setText("Incorrect", BOTTOM_LINE);
-    }
-    delay(300);
-    setText(question, TOP_LINE);
-    setText(secondLinePrefix + input, BOTTOM_LINE);
-  } else {
-    input += c;
-    lines[BOTTOM_LINE] = secondLinePrefix + input;
-  }
 }
 
 // LCD stuff
@@ -92,10 +86,10 @@ short lineLengths[] = {0, 0};
 
 // Used for scrolling text lines
 long lastPrintTime = 0; // ms
-long updateInterval = 1000; // ms between printing lines
-long initialDelay = updateInterval * 3; // time to wait before scrolling
+short updateInterval = 1000; // ms between printing lines
+short initialDelay = updateInterval * 3; // time to wait before scrolling
 
-void setText(String str, int line) {
+void setText(String str, short line) {
   lines[line] = str;
   // Set needed scroll amount (if necessary)
   lineLengths[line] = str.length();
@@ -103,6 +97,8 @@ void setText(String str, int line) {
   if (scrollMax[line] < 0) {
     scrollMax[line] = 0; // Don't need to scroll (shorter than line length)
   }
+  scrollPos[0] = 0;
+  scrollPos[1] = 0;
 }
 
 void maybeUpdateDisplay() {
@@ -126,9 +122,9 @@ void maybeUpdateDisplay() {
   printSubstring(lines[BOTTOM_LINE], scrollPos[1], LCD_LINE_LENGTH, BOTTOM_LINE);
 }
 
-void printSubstring(String str, int startPos, int numChars, int lcdLine) {
-  int strLen = str.length();
-  int endPos = startPos + numChars;
+void printSubstring(String str, short startPos, short numChars, short lcdLine) {
+  short strLen = str.length();
+  short endPos = startPos + numChars;
   if (endPos > strLen) {
     endPos = strLen;
   }

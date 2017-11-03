@@ -1,5 +1,7 @@
 from raspi.arduino_comm import ArduinoComm
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
+from raspi.available_io import *
+import time
 
 
 class BOCSMain:
@@ -9,14 +11,16 @@ class BOCSMain:
     current_puzzle = None
     current_puzzle_index = 0
 
+    outputs = {}
+
     def __init__(self):
         # Initialize stuff
         self.state = BOCSState.INITIALIZING
-        self.ac = ArduinoComm(self.event_callback)
+        self.outputs[LCD_1] = ArduinoComm(self.event_callback, '/dev/ttyACM0')
         self.puzzles = [BirthdayParadoxPuzzle]
 
         # Run the puzzles!
-        self.state = BOCSState.RUNNING
+        self.state = BOCSState(BOCSState.RUNNING)
         self.current_puzzle = self.puzzles[0](self.update_io_state, self.register_callback)
         self.run_puzzles()
 
@@ -35,10 +39,18 @@ class BOCSMain:
                     self.current_puzzle = puzzle_class(self.update_io_state, self.register_callback)
                 else:
                     self.state = BOCSState.STOPPING
-            # Sleep?
+            time.sleep(0.005)  # Sleep for 50ms
 
-    def update_io_state(self, new_state):
-        pass  # TODO Implement IO states
+    def update_io_state(self, io_name, new_state):
+        if io_name not in self.outputs:
+            raise ValueError('Specified IO name "{}" is not a registered IO device.'.format(io_name))
+
+        # Send the new state to the Arduino
+        json_str = new_state.serialize()
+        self.outputs[io_name].send_data(json_str)
+
+        # Save the state, just in case we want to know what it is
+        self.state.io_states[io_name] = new_state
 
     def event_callback(self, event):
         if event.id in self.event_callbacks:
@@ -63,6 +75,14 @@ class BOCSState:
     LOADING_NEXT_PUZZLE = 2
     PAUSED = 3
     STOPPING = 4
+
+    def __init__(self, state):
+        self.state = state
+
+    io_states = {}
+
+    def set_io_state(self, class_name, state):
+        self.io_states[class_name] = state
 
 
 if __name__ == '__main__':

@@ -19,42 +19,48 @@ class ArduinoComm:
     :param port (string) the serial port to connect to
     :param baudrate (int) the baudrate to use (defaults to 9600)
     """
-    def __init__(self, event_callback, port='/dev/ttyACM0', baudrate=9600):
+    def __init__(self, event_callback, port='/dev/ttyACM', baudrate=9600):
         self.event_callback = event_callback
         self.port = port
         self.baudrate = baudrate
+        self.cxn = Serial(self.port, baudrate=self.baudrate)
         self.start_listening()
 
     def start_listening(self):
-        self.thread = ArduinoCommThread(self.port, self.baudrate, self.event_callback)
+        self.thread = ArduinoCommThread(self.cxn, self.event_callback)
         self.thread.setName('ArduinoCommThread for {}'.format(self.port))
         self.thread.start()
 
     def stop_listening(self):
         self.thread.stop()
 
+    def send_data(self, data):
+        if self.cxn.is_open:
+            self.cxn.write((data + '\n').encode('utf-8'))
+            return True
+        else:
+            return False
+
 
 class ArduinoCommThread(Thread):
 
     do_run = True
 
-    def __init__(self, port, baudrate, event_callback):
+    def __init__(self, cxn, event_callback):
         Thread.__init__(self)
-        self.port = port
-        self.baudrate = baudrate
+        self.cxn = cxn
         self.event_callback = event_callback
 
     def run(self):
-        cxn = Serial(self.port, baudrate=self.baudrate)
 
         while self.do_run:
-            while cxn.inWaiting() < 1 and self.do_run:
+            while self.cxn.inWaiting() < 1 and self.do_run:
                 pass  # Might want to sleep here
 
-            data = cxn.readline()
+            data = self.cxn.readline()
             if data:  # Make sure the data is valid before trying to parse it
                 try:
-                    data = data.decode('UTF-8')[0:-2]
+                    data = data.decode('UTF-8')[0:-1]
                     self.process_event(data)
                 except UnicodeDecodeError:
                     pass
@@ -65,10 +71,11 @@ class ArduinoCommThread(Thread):
     def process_event(self, raw_data):
 
         # Parse the JSON into a dictionary
-        # try:
-        raw_data = json.loads(raw_data)
-        # except json.decoder.JSONDecodeError:
-        #     return False
+        try:
+            raw_data = json.loads(raw_data)
+        except json.decoder.JSONDecodeError:
+            print('WARNING: Invalid event data format received:\n{}\n'.format(raw_data))
+            return False
 
         # Check to make sure the necessary attributes are present
         if not raw_data:
