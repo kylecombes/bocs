@@ -9,8 +9,18 @@
 #define LCD_LINE_COUNT 2
 #define LCD_SCROLL_DELTA 3
 
+#define SERVO_MAX 37
+#define SERVO_MIN 8
+
 Servo myservo;  // create servo object to control a servo
-#define ROWS 4 //four ROWS
+short goalKeypadDoorPosition = SERVO_MIN;
+short currentKeypadDoorPosition = SERVO_MIN;
+#define KEYPAD_DOOR_POSITION_DELTA 10 // degrees
+#define KEYPAD_DOOR_POSITION_CHANGE_DELAY 10 // ms
+short keypadDoorDeltaDirection = -1;
+long lastKeypadDoorMoveTime = 0;
+
+#define ROWS 4 //four rows
 #define COLS 3 //three columns
 char keys[ROWS][COLS] = {
   {'1', '2', '3'},
@@ -28,7 +38,22 @@ StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max with our oth
 #define TOP_LINE 0
 #define BOTTOM_LINE 1
 
+// LCD stuff
+
+short scrollPos[] = {0, 0};
+short scrollMax[] = {0, 0};
+short lineLengths[] = {0, 0};
+
+// Used for scrolling text lines
+#define UPDATE_INTERVAL 10 // ms between display refreshes
+#define SCROLL_INTERVAL 1000 // ms between scrolling
+#define INITIAL_PAUSE 1500 // ms to wait before scrolling after setting text
+#define REPLAY_DELAY 3000 // ms to wait before scrolling back to beginning
+
 String lines[2];
+long lastScrollTime = millis() + INITIAL_PAUSE; // wait 3 seconds before beginning scrolling
+long lastPrintTime = 0;
+String spaces = "                ";
 
 void setup() {
   // Configure keypad and door actuator
@@ -51,7 +76,9 @@ void loop() {
   
   // Get any messages coming from the computer
   if (Serial.available() > 0) {
-    JsonObject& root = jsonBuffer.parse(Serial);
+    String msg = Serial.readString();
+    msg.trim();
+    JsonObject& root = jsonBuffer.parse(msg);
     if (root.success()) { // Successfully parsed JSON from computer
       if (root.containsKey("0")) { // First line
         setText(root["0"], TOP_LINE);
@@ -59,38 +86,50 @@ void loop() {
       if (root.containsKey("1")) { // Second line
         setText(root["1"], BOTTOM_LINE);
       }
-      if (root.containsKey("bl")) {
+      if (root.containsKey("bl")) { // Turn backlight on/off
         String bl = root["bl"];
         bool backlightOn = bl.equals("1");
         lcd.setBacklight(backlightOn ? HIGH : LOW);
       }
+      if (root.containsKey("kpdr")) { // Keypad door position
+//        goalKeypadDoorPosition = root["kpdr"];
+        myservo.write(scaleServoPosition(root["kpdr"]));
+      }
+    } else {
+      Serial.println("Could not parse JSON");
     }
   }
+  jsonBuffer.clear();
   
   // Update message on LCD if necessary
-  maybeUpdateDisplay();
+  if (millis() > lastPrintTime + UPDATE_INTERVAL) {
+    if (millis() > lastScrollTime + REPLAY_DELAY) {
+      scrollPos[0] = 0; // Doesn't work with scrolling multiple lines
+      lastScrollTime = millis() + INITIAL_PAUSE;
+    }
+    updateDisplay();
+  }
+
+  // Move the door if necessary
+  maybeMoveDoor();
+}
+
+// Scale the servo position input (range: [0, 1]) to the proper output value (range: [SERVO_MIN, SERVO_MAX])
+int scaleServoPosition(float pos) {
+  return ((int)((float)(SERVO_MAX-SERVO_MIN))*pos) + SERVO_MIN;
+}
+
+void maybeMoveDoor() {
+  if (abs(goalKeypadDoorPosition - currentKeypadDoorPosition) > KEYPAD_DOOR_POSITION_DELTA &&
+      millis() > KEYPAD_DOOR_POSITION_CHANGE_DELAY + lastKeypadDoorMoveTime) {
+    currentKeypadDoorPosition += KEYPAD_DOOR_POSITION_DELTA * keypadDoorDeltaDirection;
+    myservo.write(scaleServoPosition(currentKeypadDoorPosition));
+  }
 }
 
 void processKeyInput(char c) {
-
-//  JsonObject& js = jsonBuffer.createObject();
-//  js["event_id"] = 0;
-//  js["data"] = c-48;
-//  js.printTo(Serial);
   Serial.println("{\"event_id\": 0, \"data\": \"" + (String)c + "\"}");
-
 }
-
-// LCD stuff
-
-short scrollPos[] = {0, 0};
-short scrollMax[] = {0, 0};
-short lineLengths[] = {0, 0};
-
-// Used for scrolling text lines
-long lastPrintTime = 0; // ms
-short updateInterval = 1000; // ms between printing lines
-short initialDelay = updateInterval * 3; // time to wait before scrolling
 
 void setText(String str, short line) {
   lines[line] = str;
@@ -99,26 +138,24 @@ void setText(String str, short line) {
   scrollMax[line] = lineLengths[line] - LCD_LINE_LENGTH;
   if (scrollMax[line] < 0) {
     scrollMax[line] = 0; // Don't need to scroll (shorter than line length)
+    lcd.setCursor(0, line); // Clear the line so there aren't any residual characters
+    lcd.print(spaces);
   }
-  scrollPos[0] = 0;
-  scrollPos[1] = 0;
+  scrollPos[line] = 0;
+  lastScrollTime = millis() + INITIAL_PAUSE;
 }
 
-void maybeUpdateDisplay() {
-  
-  // Return if enough time hasn't elapsed or we have no more lines to print
-  if (millis() > lastPrintTime + updateInterval) {
-    // Scroll the first line
+void updateDisplay() {
+  if (millis() > lastScrollTime + SCROLL_INTERVAL) { // Scroll the lines
     for (short line = 0; line < 2; ++line) {
       if (scrollPos[line] < scrollMax[line]) {
         scrollPos[line] += LCD_SCROLL_DELTA;
         if (scrollPos[line] > scrollMax[line]) {
           scrollPos[line] = scrollMax[line];
         }
+        lastScrollTime = millis();
       }
     }
-    
-    lastPrintTime = millis();
   }
   // Update the text on the screen
   printSubstring(lines[TOP_LINE], scrollPos[0], LCD_LINE_LENGTH, TOP_LINE);

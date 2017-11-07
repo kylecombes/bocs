@@ -1,5 +1,6 @@
 from raspi.arduino_comm import ArduinoComm
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
+from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
 from raspi.available_io import *
 import time
 
@@ -7,7 +8,7 @@ import time
 class BOCSMain:
 
     do_run = True
-    event_callbacks = {}
+    event_callback = None
     current_puzzle = None
     current_puzzle_index = 0
 
@@ -15,22 +16,23 @@ class BOCSMain:
 
     def __init__(self):
         # Initialize stuff
-        self.state = BOCSState.INITIALIZING
+        self.state = BOCSState(BOCSState.INITIALIZING)
         self.outputs[LCD_1] = ArduinoComm(self.event_callback, '/dev/ttyACM0')
-        self.puzzles = [BirthdayParadoxPuzzle]
+        self.puzzles = [BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle]
 
         # Run the puzzles!
-        self.state = BOCSState(BOCSState.RUNNING)
+        self.state.phase = BOCSState.RUNNING
         self.current_puzzle = self.puzzles[0](self.update_io_state, self.register_callback)
         self.run_puzzles()
 
     def run_puzzles(self):
-        while not self.state == BOCSState.STOPPING:
+        while not self.state.phase == BOCSState.STOPPING:
             if self.current_puzzle.is_solved:
-                self.state = BOCSState.LOADING_NEXT_PUZZLE
-                # TODO Deregister callbacks
+                # Deregister event callback
+                self.event_callback = None
 
-            if self.state == BOCSState.LOADING_NEXT_PUZZLE:
+                time.sleep(5)  # Pause for 5 seconds to show message before proceeding to next puzzle
+
                 # Increment the index to the next puzzle
                 self.current_puzzle_index += 1
                 # Check if the last puzzle was just finished
@@ -38,8 +40,13 @@ class BOCSMain:
                     puzzle_class = self.puzzles[self.current_puzzle_index]
                     self.current_puzzle = puzzle_class(self.update_io_state, self.register_callback)
                 else:
-                    self.state = BOCSState.STOPPING
+                    self.state.phase = BOCSState.STOPPING
             time.sleep(0.005)  # Sleep for 50ms
+
+    def shutdown(self):
+        # Stop event listener threads
+        for output in self.outputs.values():
+            output.stop_listening()
 
     def update_io_state(self, io_name, new_state):
         if io_name not in self.outputs:
@@ -53,37 +60,35 @@ class BOCSMain:
         self.state.io_states[io_name] = new_state
 
     def event_callback(self, event):
-        if event.id in self.event_callbacks:
-            for callback in self.event_callbacks[event.id]:
-                callback(event)
+        if self.event_callback:
+            self.event_callback(event)
 
-    def register_callback(self, event_type, callback):
-        # TODO Keep track of which puzzle registered the callback for unregistering automatically later
-        if event_type not in self.event_callbacks:
-            self.event_callbacks[event_type] = list()
+    def register_callback(self, callback):
+        self.event_callback = callback
 
-        self.event_callbacks[event_type].append(callback)
-
-    def unregister_callback(self, event_type, callback):
-        if event_type in self.event_callbacks and callback in self.event_callbacks[event_type]:
-            self.event_callbacks[event_type].remove(callback)
+    # def unregister_callback(self, event_type, callback):
+    #     if event_type in self.event_callbacks and callback in self.event_callbacks[event_type]:
+    #         self.event_callbacks[event_type].remove(callback)
 
 
 class BOCSState:
+
+    # Define phases
     INITIALIZING = 0
     RUNNING = 1
     LOADING_NEXT_PUZZLE = 2
     PAUSED = 3
     STOPPING = 4
 
-    def __init__(self, state):
-        self.state = state
+    def __init__(self, phase):
+        self.phase = phase
 
     io_states = {}
 
-    def set_io_state(self, class_name, state):
-        self.io_states[class_name] = state
+    def set_io_state(self, class_name, phase):
+        self.io_states[class_name] = phase
 
 
 if __name__ == '__main__':
-    BOCSMain()
+    bocs = BOCSMain()
+    bocs.shutdown()

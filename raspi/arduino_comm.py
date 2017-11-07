@@ -67,6 +67,7 @@ class ArduinoCommThread(Thread):
                     except UnicodeDecodeError:
                         pass
             # self.cxn.flushInput()
+            time.sleep(0.05)
 
     """
     Handles deserializing the event data and calling the event callback.
@@ -98,7 +99,8 @@ class ArduinoCommThread(Thread):
         event = ArduinoCommEvent(event_id, data, options)
 
         # Pass the event to the callback
-        self.event_callback(event)
+        if self.event_callback:
+            self.event_callback(event)
 
     def stop(self):
         self.do_run = False
