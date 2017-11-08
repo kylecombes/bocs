@@ -28,8 +28,8 @@ char keys[ROWS][COLS] = {
   {'7', '8', '9'},
   {'*', '0', '#'}
 };
-byte rowPins[ROWS] = {5, 4, 3, 2}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {10, 9, 8}; //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 LiquidCrystal_I2C  lcd(0x3D,2,1,0,4,5,6,7); // 0x3D is the I2C bus address for an unmodified backpack -- THIS MAY CHANGE BETWEEN DISPLAYS
@@ -46,7 +46,7 @@ short lineLengths[] = {0, 0};
 
 // Used for scrolling text lines
 #define UPDATE_INTERVAL 10 // ms between display refreshes
-#define SCROLL_INTERVAL 1000 // ms between scrolling
+#define SCROLL_INTERVAL 800 // ms between scrolling
 #define INITIAL_PAUSE 1500 // ms to wait before scrolling after setting text
 #define REPLAY_DELAY 3000 // ms to wait before scrolling back to beginning
 
