@@ -1,7 +1,7 @@
 // This Arduino interfaces with a 16-character x 2-line LCD, a numeric keypad, a keypad door
 // actuation servo, and a telegraph input.
 
-// -------------------- BEGIN CONFIGURATION -------------------- //
+//////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
 // Communication with computer using JSON to allow sending key-value pairs
 #include <ArduinoJson.h>
 StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max given our other memory requirements)
@@ -27,8 +27,8 @@ String lines[2];              // The lines of text to display and scroll
 short scrollPos[] = {0, 0};   // Used to keep track of the current scroll positions of each line
 short scrollMax[] = {0, 0};   // Used to keep track of the maximum scroll positions for each line
 short lineLengths[] = {0, 0}; // Used to keep track of the length of the strings for each line
-long lastScrollTime = millis() + INITIAL_PAUSE; // wait 3 seconds before beginning scrolling
-long lastPrintTime = 0;       // The last time the display was refreshed (to limit the refresh rate)
+unsigned long lastScrollTime = millis() + INITIAL_PAUSE; // Wait 3 seconds before beginning scrolling
+unsigned long lastPrintTime = 0;    // The last time the display was refreshed (to limit the refresh rate)
 String spaces = "                "; // Used for clearing single lines
 
 LiquidCrystal_I2C  lcd(0x3D, 2, 1, 0, 4, 5, 6, 7); // 0x3D is the I2C bus address for an unmodified backpack -- THIS MAY CHANGE BETWEEN DISPLAYS
@@ -68,14 +68,26 @@ Servo myservo;  // create servo object to control a servo
 short goalKeypadDoorPosition = SERVO_MIN;
 short currentKeypadDoorPosition = SERVO_MIN;
 short keypadDoorDeltaDirection = -1;
-long lastKeypadDoorMoveTime = 0;
+unsigned long lastKeypadDoorMoveTime = 0;
 
 // ----- End keypad door servo config ----- //
 
-// -------------------- END CONFIGURATION -------------------- //
+
+// ----- Begin telegraph button config ----- //
+#define TELEGRAPH_BUTTON_PIN 12
+short lastButtonState = LOW;
+//#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
+//unsigned long lastTelegraphButtonReadTime = 0;
+unsigned long lastDebounceTime = 0; // The last time the button state changed
+#define DEBOUNCE_DELAY 10 // ms to wait between polling button pin
+unsigned long buttonDepressTime = 0;
+
+// ----- End telegraph button config ----- //
+
+///////////////////// -----  END CONFIGURATION ----- ////////////////////
 
 
-// -------------------- BEGIN LOGIC ------------------ //
+//////////////////// ------ BEGIN LOGIC ------ ////////////////////
 
 void setup() {
   // Configure computer comms
@@ -89,6 +101,9 @@ void setup() {
   lcd.begin(LCD_LINE_LENGTH, LCD_LINE_COUNT); // for 16 x 2 LCD module
   lcd.setBacklightPin(3, POSITIVE);
   Serial.begin(9600);
+
+  // Configure telegraph button
+  pinMode(TELEGRAPH_BUTTON_PIN, INPUT);
 }
 
 void loop() {
@@ -100,6 +115,9 @@ void loop() {
 
   // Move door if necessary
   maybeMoveDoor();
+
+  // Check telegraph button
+  checkTelegraphButton();
 }
 
 // ---------- Begin computer communication logic ---------- //
@@ -219,3 +237,37 @@ void printSubstring(String str, short startPos, short numChars, short lcdLine) {
 }
 
 // ---------- End LCD logic ---------- //
+
+
+// ---------- Begin telegraph button logic ---------- //
+
+void checkTelegraphButton() {
+  // Make sure enough time has elapsed between reads
+//  if (millis() < lastTelegraphButtonReadTime + TELEGRAPH_BUTTON_READ_DELAY) return;
+  
+  int currentButtonState = digitalRead(TELEGRAPH_BUTTON_PIN); // Get the current value
+
+  if (currentButtonState != lastButtonState) { // The switch changed, due to noise or pressing
+    lastDebounceTime = millis(); // Reset the debouncing timer
+  }
+
+  delay(20); // Current workaround
+
+  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY && currentButtonState != lastButtonState) { // Button state actually changed
+    if (currentButtonState == HIGH) { // User depressed button
+      buttonDepressTime = millis(); // Begin press duration stopwatch
+    } else { // User depressed the button
+      short depressDuration = millis() - buttonDepressTime;
+      Serial.println("{\"event_id\": \"4\", \"data\": \"" + (String)depressDuration + "\"}"); // Send depress duration to computer
+    }
+  }
+
+  // Save the currentButtonState
+  lastButtonState = currentButtonState;
+
+//  lastTelegraphButtonReadTime = millis();
+}
+
+// ---------- End telegraph button logic ---------- //
+
+//////////////////// ----- END LOGIC ----- ////////////////////
