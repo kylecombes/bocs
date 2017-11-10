@@ -21,7 +21,7 @@ class BOCSMain:
         self.state = BOCSState(BOCSState.INITIALIZING)
         self.outputs[LCD_1] = ArduinoComm(self.event_callback, '/dev/ttyACM0')
         self.outputs[DRAWER] = ArduinoComm(self.event_callback, '/dev/ttyACM1')
-        self.puzzles = [StartPrompt, DrawerPuzzle, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle]
+        self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
