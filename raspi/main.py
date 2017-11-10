@@ -1,4 +1,6 @@
 from raspi.arduino_comm import ArduinoComm
+from raspi.puzzles.start import StartPrompt
+from raspi.puzzles.drawer import DrawerPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
 from raspi.available_io import *
@@ -18,7 +20,8 @@ class BOCSMain:
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
         self.outputs[LCD_1] = ArduinoComm(self.event_callback, '/dev/ttyACM0')
-        self.puzzles = [BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle]
+        self.outputs[DRAWER] = ArduinoComm(self.event_callback, '/dev/ttyACM1')
+        self.puzzles = [StartPrompt, DrawerPuzzle, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING

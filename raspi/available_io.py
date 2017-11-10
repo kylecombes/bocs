@@ -4,3 +4,4 @@ can be used by other classes to refer to specific input/outputs.
 """
 
 LCD_1 = 'lcd1'
+DRAWER = 'drawer'

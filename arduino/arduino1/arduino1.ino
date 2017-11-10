@@ -7,6 +7,26 @@
 StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max given our other memory requirements)
 
 
+// ----- End telegraph button config ----- //
+
+
+// ----- Begin start button light config ----- //
+#define START_BUTTON_LED_PIN 10
+bool startButtonLightOn = true;
+
+// ----- End start button light config ----- //
+
+
+// ----- Begin start button config ----- //
+#define START_BUTTON_PIN 11
+short lastStartButtonState = LOW;
+//#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
+//unsigned long lastTelegraphButtonReadTime = 0;
+unsigned long lastStartButtonDebounceTime = 0; // The last time the button state changed
+
+// ----- End start button config ----- //
+
+
 // ----- Begin LCD config ----- //
 
 #include <Wire.h> // For I2C
@@ -58,7 +78,7 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Neces
 // ----- Begin keypad door servo config ----- //
 
 #include <Servo.h>
-#define SERVO_PIN 11  // The pin the servo is connected to on the Arduino
+#define SERVO_PIN 9  // The pin the servo is connected to on the Arduino
 #define SERVO_MAX 37  // The maximum PWM value for the servo
 #define SERVO_MIN 8   // The minimum PWM value for the servo
 #define KEYPAD_DOOR_POSITION_DELTA 10 // Number of degrees to move servo by on each position update
@@ -75,14 +95,12 @@ unsigned long lastKeypadDoorMoveTime = 0;
 
 // ----- Begin telegraph button config ----- //
 #define TELEGRAPH_BUTTON_PIN 12
-short lastButtonState = LOW;
+short lastTelegraphButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
-unsigned long lastDebounceTime = 0; // The last time the button state changed
+unsigned long lastTelegraphDebounceTime = 0; // The last time the button state changed
 #define DEBOUNCE_DELAY 10 // ms to wait between polling button pin
 unsigned long buttonDepressTime = 0;
-
-// ----- End telegraph button config ----- //
 
 ///////////////////// -----  END CONFIGURATION ----- ////////////////////
 
@@ -104,12 +122,27 @@ void setup() {
 
   // Configure telegraph button
   pinMode(TELEGRAPH_BUTTON_PIN, INPUT);
+
+  // Configure start button
+  pinMode(START_BUTTON_PIN, INPUT);
+
+  // Configure start button LED
+  pinMode(START_BUTTON_LED_PIN, OUTPUT);
 }
 
 void loop() {
   // Check computer comms
   checkSerialForMessages();
 
+  // Check start button
+  checkStartButton();
+
+  // Update start button light state if necessary
+  updateStartButtonLEDState();
+
+  // Check keypad for input
+  checkForKeypadInput();
+  
   // Update message on LCD if necessary
   maybeUpdateDisplay();
 
@@ -143,6 +176,10 @@ void checkSerialForMessages() {
         //        goalKeypadDoorPosition = root["kpdr"];
         myservo.write(scaleServoPosition(root["kpdr"]));
       }
+      if (root.containsKey("sLED")) { // Turn start button LED ring on/off
+        String val = root["sLED"];
+        startButtonLightOn = val.equals("1"); // Pass "1" to turn on
+      }
     } else {
       Serial.println("Could not parse JSON");
     }
@@ -153,12 +190,48 @@ void checkSerialForMessages() {
 // ---------- End computer communication logic ---------- //
 
 
+// ---------- Begin start button logic ---------- //
+
+void checkStartButton() {
+  // Make sure enough time has elapsed between reads
+//  if (millis() < lastTelegraphButtonReadTime + TELEGRAPH_BUTTON_READ_DELAY) return;
+  
+  int currentButtonState = digitalRead(START_BUTTON_PIN); // Get the current value
+
+  if (currentButtonState != lastStartButtonState) { // The switch changed, due to noise or pressing
+    lastStartButtonDebounceTime = millis(); // Reset the debouncing timer
+  }
+
+  delay(20); // Current workaround
+
+  if ((millis() - lastStartButtonDebounceTime) > DEBOUNCE_DELAY && currentButtonState != lastStartButtonState && currentButtonState == HIGH) { // User actually depressed button
+    Serial.println("{\"event_id\": \"0\"}"); // Send event to computer
+  }
+
+  // Save the currentButtonState
+  lastStartButtonState = currentButtonState;
+
+//  lastTelegraphButtonReadTime = millis();
+}
+
+// ---------- End telegraph button logic ---------- //
+
+
+// ---------- Begin start button light logic ---------- //
+
+void updateStartButtonLEDState() {
+  digitalWrite(START_BUTTON_LED_PIN, startButtonLightOn ? HIGH : LOW);
+}
+
+// ---------- End start button light logic ---------- //
+
+
 // ---------- Begin keypad logic ---------- //
 
 void checkForKeypadInput() {
   char key = keypad.getKey();
   if (key != 0) { // Key pressed
-    Serial.println("{\"event_id\": 0, \"data\": \"" + (String)key + "\"}");
+    Serial.println("{\"event_id\": 6, \"data\": \"" + (String)key + "\"}");
   }
 }
 
@@ -247,13 +320,13 @@ void checkTelegraphButton() {
   
   int currentButtonState = digitalRead(TELEGRAPH_BUTTON_PIN); // Get the current value
 
-  if (currentButtonState != lastButtonState) { // The switch changed, due to noise or pressing
-    lastDebounceTime = millis(); // Reset the debouncing timer
+  if (currentButtonState != lastTelegraphButtonState) { // The switch changed, due to noise or pressing
+    lastTelegraphDebounceTime = millis(); // Reset the debouncing timer
   }
 
   delay(20); // Current workaround
 
-  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY && currentButtonState != lastButtonState) { // Button state actually changed
+  if ((millis() - lastTelegraphDebounceTime) > DEBOUNCE_DELAY && currentButtonState != lastTelegraphButtonState) { // Button state actually changed
     if (currentButtonState == HIGH) { // User depressed button
       buttonDepressTime = millis(); // Begin press duration stopwatch
     } else { // User depressed the button
@@ -263,7 +336,7 @@ void checkTelegraphButton() {
   }
 
   // Save the currentButtonState
-  lastButtonState = currentButtonState;
+  lastTelegraphButtonState = currentButtonState;
 
 //  lastTelegraphButtonReadTime = millis();
 }

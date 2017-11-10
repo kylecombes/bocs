@@ -96,7 +96,7 @@ class ArduinoCommThread(Thread):
         options = raw_data.get('options', None)
 
         # Create an event object
-        event = ArduinoCommEvent(event_id, data, options)
+        event = ArduinoCommEvent(int(event_id), data, options)
 
         # Pass the event to the callback
         if self.event_callback:
