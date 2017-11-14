@@ -19,9 +19,11 @@ class BOCSMain:
     def __init__(self):
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
-        self.outputs[LCD_1] = ArduinoComm(self.event_callback, '/dev/ttyACM0')
-        self.outputs[DRAWER] = ArduinoComm(self.event_callback, '/dev/ttyACM1')
+        ArduinoComm(self.event_callback, self.register_arduino, '/dev/ttyACM0')
+        # self.outputs[DRAWER] = ArduinoComm(self.event_callback, '/dev/ttyACM1')
         self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
+        while len(self.outputs) < 1:
+            pass  # Wait for the Arduino to connect
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
@@ -61,6 +63,9 @@ class BOCSMain:
 
         # Save the state, just in case we want to know what it is
         self.state.io_states[io_name] = new_state
+
+    def register_arduino(self, comm, device_name):
+        self.outputs[device_name] = comm
 
     def event_callback(self, event):
         if self.event_callback:

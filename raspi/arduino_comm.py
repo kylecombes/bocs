@@ -1,5 +1,6 @@
 from serial import Serial
 from threading import Thread
+from datetime import datetime, timedelta
 import json
 import time
 from raspi.arduino_comm_event import ArduinoCommEvent
@@ -20,18 +21,17 @@ class ArduinoComm:
     :param port (string) the serial port to connect to
     :param baudrate (int) the baudrate to use (defaults to 9600)
     """
-    def __init__(self, event_callback, port='/dev/ttyACM0', baudrate=9600):
+    def __init__(self, event_callback, register_callback, port='/dev/ttyACM0', baudrate=9600):
         self.event_callback = event_callback
+        self.register_callback = register_callback
         self.port = port
         self.baudrate = baudrate
         self.cxn = Serial(self.port, baudrate=self.baudrate)
-        time.sleep(2)  # Wait for serial connection to open TODO Better way of doing this
-        self.cxn.flushOutput()
-        self.cxn.flushInput()
+
         self.start_listening()
 
     def start_listening(self):
-        self.thread = ArduinoCommThread(self.cxn, self.event_callback)
+        self.thread = ArduinoCommThread(self.cxn, self.event_callback, self.register_callback)
         self.thread.setName('ArduinoCommThread for {}'.format(self.port))
         self.thread.start()
 
@@ -49,21 +49,31 @@ class ArduinoComm:
 class ArduinoCommThread(Thread):
 
     do_run = True
+    connected = False
 
-    def __init__(self, cxn, event_callback):
+    def __init__(self, cxn, event_callback, register_callback, connection_timeout=1000):
         Thread.__init__(self)
         self.cxn = cxn
         self.event_callback = event_callback
+        self.register_callback = register_callback
+        self.abort_time = datetime.now() + timedelta(milliseconds=connection_timeout)
 
     def run(self):
 
-        while self.do_run:
+        while self.do_run and (self.connected or self.abort_time > datetime.now()):
             while self.cxn.inWaiting() > 1:
                 data = self.cxn.readline()
                 if data:  # Make sure the data is valid before trying to parse it
                     try:
                         data = data.decode('UTF-8')[0:-2]
-                        self.process_event(data)
+                        if not self.connected:  # Handshake not completed yet
+                            if data.startswith('Hello from '):
+                                self.connected = True
+                                device_name = data[10:]
+                                self.register_callback(self, device_name)
+                                self.cxn.write(("Hello from computer\n".encode('utf-8')))
+                        else:
+                            self.process_event(data)
                     except UnicodeDecodeError:
                         pass
             # self.cxn.flushInput()

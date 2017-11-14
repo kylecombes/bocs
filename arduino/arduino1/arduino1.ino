@@ -1,13 +1,13 @@
-// This Arduino interfaces with a 16-character x 2-line LCD, a numeric keypad, a keypad door
-// actuation servo, and a telegraph input.
+#include <Adafruit_Trellis.h>
+
+// This Arduino interfaces with a 16-character x 2-line LCD, a numeric keypad, an Adafruit Trellis keypad,
+// a keypad door actuation servo, and a telegraph input.
 
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
 // Communication with computer using JSON to allow sending key-value pairs
 #include <ArduinoJson.h>
 StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max given our other memory requirements)
-
-
-// ----- End telegraph button config ----- //
+bool handshakeCompleted = false;
 
 
 // ----- Begin start button light config ----- //
@@ -56,6 +56,15 @@ LiquidCrystal_I2C  lcd(0x3D, 2, 1, 0, 4, 5, 6, 7); // 0x3D is the I2C bus addres
 // ----- End LCD config ----- //
 
 
+// ----- Begin Adafruit Trellis config ----- //
+
+Adafruit_Trellis trellis = Adafruit_Trellis();
+#define TRELLIS_NUM_BUTTONS 16 // If you change this to be more than 16, you'll also need to change the data type
+                               // the values are encoded using from short to something else.
+
+// ----- End Adafruit Trellis config ----- //
+
+
 // ----- Begin numeric keypad config ----- //
 
 #include "Keypad.h"
@@ -94,6 +103,7 @@ unsigned long lastKeypadDoorMoveTime = 0;
 
 
 // ----- Begin telegraph button config ----- //
+
 #define TELEGRAPH_BUTTON_PIN 12
 short lastTelegraphButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
@@ -102,23 +112,25 @@ unsigned long lastTelegraphDebounceTime = 0; // The last time the button state c
 #define DEBOUNCE_DELAY 10 // ms to wait between polling button pin
 unsigned long buttonDepressTime = 0;
 
+// ----- End telegraph button config ----- //
+
 ///////////////////// -----  END CONFIGURATION ----- ////////////////////
 
 
 //////////////////// ------ BEGIN LOGIC ------ ////////////////////
 
 void setup() {
-  // Configure computer comms
-  Serial.begin(9600); // Initialize serial with baudrate of 9600 bps
   
   // Configure keypad door actuator
   myservo.attach(SERVO_PIN);
   myservo.write(150);
 
   // Configure LCD module
-  lcd.begin(LCD_LINE_LENGTH, LCD_LINE_COUNT); // for 16 x 2 LCD module
-  lcd.setBacklightPin(3, POSITIVE);
-  Serial.begin(9600);
+//  lcd.begin(LCD_LINE_LENGTH, LCD_LINE_COUNT); // for 16 x 2 LCD module
+//  lcd.setBacklightPin(3, POSITIVE);
+
+  // Configure Trellis keypad
+  trellis.begin(0x70);
 
   // Configure telegraph button
   pinMode(TELEGRAPH_BUTTON_PIN, INPUT);
@@ -128,29 +140,47 @@ void setup() {
 
   // Configure start button LED
   pinMode(START_BUTTON_LED_PIN, OUTPUT);
+  
+  // Configure computer comms
+  Serial.begin(9600); // Initialize serial with baudrate of 9600 bps
+
 }
 
 void loop() {
-  // Check computer comms
-  checkSerialForMessages();
-
-  // Check start button
-  checkStartButton();
-
-  // Update start button light state if necessary
-  updateStartButtonLEDState();
-
-  // Check keypad for input
-  checkForKeypadInput();
+  if (handshakeCompleted) {
+    
+    // Check computer comms
+    checkSerialForMessages();
   
-  // Update message on LCD if necessary
-  maybeUpdateDisplay();
-
-  // Move door if necessary
-  maybeMoveDoor();
-
-  // Check telegraph button
-  checkTelegraphButton();
+    // Check start button
+  //  checkStartButton();
+  
+    // Update start button light state if necessary
+  //  updateStartButtonLEDState();
+  
+    // Check keypad for input
+  //  checkForKeypadInput();
+    
+    // Update message on LCD if necessary
+  //  maybeUpdateDisplay();
+  
+    // Check for Trellis button presses
+    checkTrellisButtons();
+  
+    // Move door if necessary
+  //  maybeMoveDoor();
+  
+    // Check telegraph button
+  //  checkTelegraphButton();
+  } else {
+    if (Serial.available() > 0) { // The computer is responding
+      String msg = Serial.readString();
+      handshakeCompleted = msg.equals("Hello from computer\n");
+    } else { // Cry out for a computer
+      Serial.println("Hello from lcd1");
+      delay(100);
+    }
+  }
 }
 
 // ---------- Begin computer communication logic ---------- //
@@ -179,6 +209,9 @@ void checkSerialForMessages() {
       if (root.containsKey("sLED")) { // Turn start button LED ring on/off
         String val = root["sLED"];
         startButtonLightOn = val.equals("1"); // Pass "1" to turn on
+      }
+      if (root.containsKey("tLEDs")) { // Set the Trellis LEDs
+        setTrellisLights(root["tLEDs"]);
       }
     } else {
       Serial.println("Could not parse JSON");
@@ -310,6 +343,35 @@ void printSubstring(String str, short startPos, short numChars, short lcdLine) {
 }
 
 // ---------- End LCD logic ---------- //
+
+
+// ---------- Begin Trellis logic ---------- //
+
+void checkTrellisButtons() {
+  unsigned short buttonStates = 0;
+  if (trellis.readSwitches()) { // Button state has changed since last check
+    for (short i = 0; i < TRELLIS_NUM_BUTTONS; ++i) {
+      if (trellis.isKeyPressed(i)) {
+        buttonStates |= 1 << i;
+      }
+    }
+    Serial.println("{\"event_id\": \"1\", \"data\": \"" + (String)buttonStates + "\"}");
+  }
+}
+
+// Set which lights should be on by passing a boolean array, where true is on and false is off
+void setTrellisLights(short lightStatuses) {
+  for (short i = 0; i < TRELLIS_NUM_BUTTONS; ++i) {
+    if ((lightStatuses >> i) & 1) { // Light should be on
+      trellis.setLED(i);
+    } else { // Light should be off
+      trellis.clrLED(i);
+    }
+  }
+  trellis.writeDisplay();
+}
+
+// ---------- End Trellis logic ---------- //
 
 
 // ---------- Begin telegraph button logic ---------- //
