@@ -3,6 +3,7 @@ Uses library from https://bitbucket.org/fmalpartida/new-liquidcrystal/downloads 
 #include <Wire.h>
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
+#include <ArduinoJson.h>
 
 #define TOP_LINE 0
 #define BOTTOM_LINE 1
@@ -12,11 +13,12 @@ Uses library from https://bitbucket.org/fmalpartida/new-liquidcrystal/downloads 
 #define LCD_SCROLL_DELTA 3
 
 LiquidCrystal_I2C  lcd(0x3D,2,1,0,4,5,6,7); // 0x3D is the I2C bus address for an unmodified backpack -- THIS MAY CHANGE BETWEEN DISPLAYS
+StaticJsonBuffer<1000> jsonBuffer; // 1KB of 2KB total
 
 // Used for scrolling text lines
 long lastPrintTime = 0; // ms
-long updateInterval = 700; // ms between printing lines
-long initialDelay = updateInterval * 3; // time to wait before scrolling
+short updateInterval = 700; // ms between printing lines
+short initialDelay = updateInterval * 3; // time to wait before scrolling
 String lines[2];
 short scrollPos[] = {0, 0};
 short scrollMax[] = {0, 0};
@@ -34,14 +36,21 @@ void setup()
 void loop()
 {
   if (Serial.available() > 0) {
-    String input = Serial.readStringUntil('\n');
-    setText(input, TOP_LINE);
+    JsonObject& root = jsonBuffer.parse(Serial);
+    if (root.success()) { // Successfully parsed JSON from computer
+      if (root.containsKey("0")) { // First line
+        setText(root["0"], TOP_LINE);
+      }
+      if (root.containsKey("1")) { // Second line
+        setText(root["1"], BOTTOM_LINE);
+      }
+    }
   }
 
   maybeUpdateDisplay();
 }
 
-void setText(String str, int line) {
+void setText(String str, short line) {
   lines[line] = str;
   // Set needed scroll amount (if necessary)
   lineLengths[line] = str.length();
@@ -49,6 +58,8 @@ void setText(String str, int line) {
   if (scrollMax[line] < 0) {
     scrollMax[line] = 0; // Don't need to scroll (shorter than line length)
   }
+  scrollPos[0] = 0;
+  scrollPos[1] = 0;
 }
 
 void maybeUpdateDisplay() {
@@ -72,9 +83,9 @@ void maybeUpdateDisplay() {
   printSubstring(lines[BOTTOM_LINE], scrollPos[1], LCD_LINE_LENGTH, BOTTOM_LINE);
 }
 
-void printSubstring(String str, int startPos, int numChars, int lcdLine) {
-  int strLen = str.length();
-  int endPos = startPos + numChars;
+void printSubstring(String str, short startPos, short numChars, short lcdLine) {
+  short strLen = str.length();
+  short endPos = startPos + numChars;
   if (endPos > strLen) {
     endPos = strLen;
   }
