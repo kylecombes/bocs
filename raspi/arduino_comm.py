@@ -46,10 +46,16 @@ class ArduinoComm:
             return False
 
 
+DISCONNECTED = 0
+CONNECTING = 1
+CONNECTED = 2
+
+
 class ArduinoCommThread(Thread):
 
     do_run = True
-    connected = False
+    state = DISCONNECTED
+    device_name = None
 
     def __init__(self, cxn, event_callback, register_callback, connection_timeout=1000):
         Thread.__init__(self)
@@ -60,18 +66,27 @@ class ArduinoCommThread(Thread):
 
     def run(self):
 
-        while self.do_run and (self.connected or self.abort_time > datetime.now()):
+        while self.do_run and (self.state == CONNECTED or self.abort_time > datetime.now()):
             while self.cxn.inWaiting() > 1:
                 data = self.cxn.readline()
                 if data:  # Make sure the data is valid before trying to parse it
                     try:
                         data = data.decode('UTF-8')[0:-2]
-                        if not self.connected:  # Handshake not completed yet
+                        if self.state == DISCONNECTED:  # Handshake not completed yet
                             if data.startswith('Hello from '):
-                                self.connected = True
-                                device_name = data[10:]
-                                self.register_callback(self, device_name)
-                                self.cxn.write(("Hello from computer\n".encode('utf-8')))
+                                self.device_name = data[11:]
+                                self.cxn.write(b'Hello from computer')
+                                self.abort_time += timedelta(milliseconds=10000)  # Give 10 seconds to complete
+                                self.state = CONNECTING
+
+                        elif self.state == CONNECTING:
+                            if data == "Connected":
+                                self.state = CONNECTED
+                                self.register_callback(self, self.device_name)
+                                print("Connected to " + self.device_name)
+                            else:
+                                self.cxn.write(b'Hello from computer')
+                                print("Connecting to " + self.device_name)
                         else:
                             self.process_event(data)
                     except UnicodeDecodeError:

@@ -8,6 +8,8 @@
 #include <ArduinoJson.h>
 StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max given our other memory requirements)
 bool handshakeCompleted = false;
+unsigned long nextBroadcastTime = 0;
+#define BROADCAST_INTERVAL 500
 
 
 // ----- Begin start button light config ----- //
@@ -153,13 +155,13 @@ void loop() {
     checkSerialForMessages();
   
     // Check start button
-  //  checkStartButton();
+    checkStartButton();
   
     // Update start button light state if necessary
-  //  updateStartButtonLEDState();
+    updateStartButtonLEDState();
   
     // Check keypad for input
-  //  checkForKeypadInput();
+    checkForKeypadInput();
     
     // Update message on LCD if necessary
   //  maybeUpdateDisplay();
@@ -171,14 +173,15 @@ void loop() {
   //  maybeMoveDoor();
   
     // Check telegraph button
-  //  checkTelegraphButton();
+    checkTelegraphButton();
   } else {
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
-      handshakeCompleted = msg.equals("Hello from computer\n");
-    } else { // Cry out for a computer
-      Serial.println("Hello from lcd1");
-      delay(100);
+      handshakeCompleted = msg.equals("Hello from computer");
+      Serial.println(handshakeCompleted ? "Connected" : "Not connected");
+    } else if (millis() > nextBroadcastTime) { // Cry out for a computer
+      Serial.println("Hello from arduino1");
+      nextBroadcastTime = millis() + BROADCAST_INTERVAL;
     }
   }
 }
