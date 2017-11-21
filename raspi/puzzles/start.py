@@ -12,7 +12,11 @@ class StartPrompt(BOCSPuzzle):
         # Subscribe to input events
         register_callback(self.key_pressed)
 
+
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
             # TODO Shut off light
+            # Play Mac startup chime
+            self.play_sound('media/Mac-chime.wav')
+            # Mark puzzle as solved
             self.is_solved = True
