@@ -1,5 +1,13 @@
+# Media files
+*.wav
+*.mp3
+*.png
+*.bmp
+/raspi/media/*
+
 # JetBrains
 .idea
+.idea/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

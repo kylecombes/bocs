@@ -2,7 +2,7 @@ import time
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.available_io import *
-from raspi.io_states.start_button_led_state import StartButtonLEDState
+from raspi.io_states.start_button_state import StartButtonState
 
 
 class StartPrompt(BOCSPuzzle):
@@ -13,9 +13,9 @@ class StartPrompt(BOCSPuzzle):
         self.eink.set_image('bocs-start.png')
 
         # Turn on start button LED
-        start_button_led_state = StartButtonLEDState()
-        start_button_led_state.set_light_state(StartButtonLEDState.ON)
-        update_io_state(ARDUINO1, start_button_led_state)
+        start_button_state = StartButtonState()
+        start_button_state.set_led_on(True)
+        update_io_state(ARDUINO1, start_button_state)
 
         # Subscribe to input events
         register_callback(self.key_pressed)
@@ -23,8 +23,8 @@ class StartPrompt(BOCSPuzzle):
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
             # Turn off start button LED
-            start_button_led_state = StartButtonLEDState()
-            start_button_led_state.set_light_state(StartButtonLEDState.OFF)
+            start_button_led_state = StartButtonState()
+            start_button_led_state.set_led_on(False)
             self.update_io_state(ARDUINO1, start_button_led_state)
 
             # Play Mac startup chime

@@ -1,15 +1,12 @@
 from raspi.io_states.io_state import IOState
 
 
-class StartButtonLEDState(IOState):
-
-    ON = True
-    OFF = False
+class StartButtonState(IOState):
 
     def __init__(self, old_state_json=None):
         IOState.__init__(self, old_state_json)
 
-    def set_light_state(self, is_on):
+    def set_led_on(self, is_on):
         """
         Sets whether the start button LED is on or off.
         :param is_on: True for on, False for off

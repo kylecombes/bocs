@@ -17,7 +17,7 @@ class ArduinoComm:
     """
     Creates a new instance of ArduinoComm.
     :param event_callback (function) a callback to use when something is received from the Arduino
-    :param port (string) the serial port to connect to
+    :param port (string) the serial port to connect to (defaults to /dev/ttyACM0)
     :param baudrate (int) the baudrate to use (defaults to 9600)
     """
     def __init__(self, event_callback, register_callback, port='/dev/ttyACM0', baudrate=9600):
@@ -131,15 +131,15 @@ class ArduinoCommThread(Thread):
 
 class ArduinoCommEvent:
 
-    def __init__(self, event_id, data, options=None):
+    def __init__(self, event_id, data, extra=None):
         self.id = event_id
         self.data = data
-        self.options = options
+        self.extra = extra
 
 
 class ArduinoCommEventType:
     START_BUTTON_PRESS = 0
-    LED_KEYPAD_PRESS = 1
+    TRELLIS_BUTTON_PRESS = 1
     PIANO_KEYBOARD_CHANGE = 2
     DRAWER_STATE_CHANGE = 3
     TELEGRAPH_TAP = 4
