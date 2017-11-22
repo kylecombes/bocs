@@ -14,7 +14,7 @@ unsigned long nextBroadcastTime = 0;
 
 // ----- Begin start button light config ----- //
 #define START_BUTTON_LED_PIN 10
-bool startButtonLightOn = true;
+bool startButtonLightOn = false;
 
 // ----- End start button light config ----- //
 
@@ -142,6 +142,7 @@ void setup() {
 
   // Configure start button LED
   pinMode(START_BUTTON_LED_PIN, OUTPUT);
+  updateStartButtonLEDState();
   
   // Configure computer comms
   Serial.begin(9600); // Initialize serial with baudrate of 9600 bps

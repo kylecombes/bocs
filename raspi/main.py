@@ -1,3 +1,4 @@
+from serial.tools.list_ports import comports
 from raspi.arduino_comm import ArduinoComm
 from raspi.puzzles.start import StartPrompt
 from raspi.puzzles.drawer import DrawerPuzzle
@@ -13,17 +14,22 @@ class BOCSMain:
     event_callback = None
     current_puzzle = None
     current_puzzle_index = 0
+    future_arduino_states = {}  # State updates are queued here until the given Arduino is connected
 
     outputs = {}
 
     def __init__(self):
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
-        # ArduinoComm(self.event_callback, self.register_arduino, '/dev/ttyACM0')
-        # self.outputs[DRAWER] = ArduinoComm(self.event_callback, '/dev/ttyACM1')
+        available_ports = BOCSMain.get_available_serial_ports()
+        for port in available_ports:
+            # Try to register each available port as an Arduino
+            try:
+                ArduinoComm(self.event_fired, self.register_arduino, port)
+            except Exception:
+                pass  # Probably not an Arduino connected at this port
+
         self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
-        # while len(self.outputs) < 1:
-        #     pass  # Wait for the Arduino to connect
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
@@ -54,8 +60,14 @@ class BOCSMain:
             output.stop_listening()
 
     def update_io_state(self, io_name, new_state):
-        if io_name not in self.outputs:
-            raise ValueError('Specified IO name "{}" is not a registered IO device.'.format(io_name))
+        if io_name in self.outputs:  # Desired Arduino is currently connected
+            self.transmit_io_state_update(io_name, new_state)
+        else:  # Desired Arduino not currently connected, so save message to be sent upon connection
+            if io_name not in self.future_arduino_states:  # First attempt to update this particular Arduino's state
+                self.future_arduino_states[io_name] = []  # Initialize new empty queue
+            self.future_arduino_states[io_name].append(new_state)  # Queue the update
+        
+    def transmit_io_state_update(self, io_name, new_state):
 
         # Send the new state to the Arduino
         json_str = new_state.serialize()
@@ -67,16 +79,24 @@ class BOCSMain:
     def register_arduino(self, comm, device_name):
         self.outputs[device_name] = comm
 
-    def event_callback(self, event):
+        # Check to see if there is a state update waiting to be sent to this Arduino
+        if device_name in self.future_arduino_states:
+            for update in self.future_arduino_states[device_name]:
+                self.transmit_io_state_update(device_name, update)
+
+    def event_fired(self, event):
         if self.event_callback:
             self.event_callback(event)
 
     def register_callback(self, callback):
         self.event_callback = callback
 
-    # def unregister_callback(self, event_type, callback):
-    #     if event_type in self.event_callbacks and callback in self.event_callbacks[event_type]:
-    #         self.event_callbacks[event_type].remove(callback)
+    @staticmethod
+    def get_available_serial_ports():
+        """
+        Gets all available /dev/ttyACM# COM ports.
+        """
+        return [port.device for port in comports() if port.name.startswith('ttyACM')]
 
 
 class BOCSState:

@@ -3,7 +3,6 @@ from threading import Thread
 from datetime import datetime, timedelta
 import json
 import time
-from raspi.arduino_comm_event import ArduinoCommEvent
 
 """
 This module handles all communication with an Arduino.
@@ -31,7 +30,7 @@ class ArduinoComm:
         self.start_listening()
 
     def start_listening(self):
-        self.thread = ArduinoCommThread(self.cxn, self.event_callback, self.register_callback)
+        self.thread = ArduinoCommThread(self.cxn, self, self.event_callback, self.register_callback)
         self.thread.setName('ArduinoCommThread for {}'.format(self.port))
         self.thread.start()
 
@@ -57,9 +56,10 @@ class ArduinoCommThread(Thread):
     state = DISCONNECTED
     device_name = None
 
-    def __init__(self, cxn, event_callback, register_callback, connection_timeout=1000):
+    def __init__(self, cxn, arduino_comm, event_callback, register_callback, connection_timeout=1000):
         Thread.__init__(self)
         self.cxn = cxn
+        self.arduino_comm = arduino_comm
         self.event_callback = event_callback
         self.register_callback = register_callback
         self.abort_time = datetime.now() + timedelta(milliseconds=connection_timeout)
@@ -76,23 +76,21 @@ class ArduinoCommThread(Thread):
                             if data.startswith('Hello from '):
                                 self.device_name = data[11:]
                                 self.cxn.write(b'Hello from computer')
-                                self.abort_time += timedelta(milliseconds=10000)  # Give 10 seconds to complete
+                                self.abort_time += timedelta(seconds=10)  # Give 10 seconds to complete
                                 self.state = CONNECTING
 
-                        elif self.state == CONNECTING:
-                            if data == "Connected":
+                        elif self.state == CONNECTING:  # In the process of shaking hands (waiting on Arduino)
+                            if data == "Connected":  # Arduino acknowledged us
                                 self.state = CONNECTED
-                                self.register_callback(self, self.device_name)
+                                self.register_callback(self.arduino_comm, self.device_name)
                                 print("Connected to " + self.device_name)
-                            else:
+                            else:  # Arduino is being difficult. Keep introducing yourself.
                                 self.cxn.write(b'Hello from computer')
                                 print("Connecting to " + self.device_name)
                         else:
                             self.process_event(data)
                     except UnicodeDecodeError:
                         pass
-            # self.cxn.flushInput()
-            time.sleep(0.05)
 
     """
     Handles deserializing the event data and calling the event callback.
@@ -129,3 +127,21 @@ class ArduinoCommThread(Thread):
 
     def stop(self):
         self.do_run = False
+
+
+class ArduinoCommEvent:
+
+    def __init__(self, event_id, data, options=None):
+        self.id = event_id
+        self.data = data
+        self.options = options
+
+
+class ArduinoCommEventType:
+    START_BUTTON_PRESS = 0
+    LED_KEYPAD_PRESS = 1
+    PIANO_KEYBOARD_CHANGE = 2
+    DRAWER_STATE_CHANGE = 3
+    TELEGRAPH_TAP = 4
+    RESISTOR_ARRAY_CHANGE = 5
+    NUMERIC_KEYPAD_PRESS = 6

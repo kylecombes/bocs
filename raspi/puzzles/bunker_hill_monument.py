@@ -1,4 +1,4 @@
-from raspi.arduino_comm_event import ArduinoCommEventType as EventType
+from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.io_states.lcd_state import LCDState
 from raspi.available_io import *
 import time
@@ -45,5 +45,5 @@ class BunkerHillMonumentPuzzle:
                 line2 = self.LINE_2_PREFIX + self.guess
 
             self.lcd_state.set_line(LCDState.BOTTOM_LINE, line2)
-            self.update_io_state(LCD_1, self.lcd_state)
+            self.update_io_state(ARDUINO1, self.lcd_state)
             time.sleep(pause)

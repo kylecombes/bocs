@@ -1,4 +1,4 @@
-from raspi.arduino_comm_event import ArduinoCommEventType as EventType
+from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.io_states.lcd_state import LCDState
 from raspi.available_io import *
 
@@ -11,7 +11,7 @@ class DrawerPuzzle:
     def __init__(self, update_io_state, register_callback):
         # Set the initial states of the inputs and outputs we'll be using
         self.lcd_state = LCDState(self.PROMPT)
-        update_io_state(LCD_1, self.lcd_state)
+        update_io_state(ARDUINO1, self.lcd_state)
         self.update_io_state = update_io_state
 
         # Subscribe to input events
@@ -27,4 +27,4 @@ class DrawerPuzzle:
                 else:
                     self.lcd_state.set_line(LCDState.TOP_LINE, "Put in an object, ya dweeb")
 
-            self.update_io_state(LCD_1, self.lcd_state)
+            self.update_io_state(ARDUINO1, self.lcd_state)
