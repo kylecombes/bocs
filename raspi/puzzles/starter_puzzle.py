@@ -17,12 +17,12 @@ class PuzzleName(BOCSPuzzle):
         BOCSPuzzle.__init__(self, update_io_state)
 
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
-        register_callback(self.event_received)
+        register_callback(self.user_input_event_received)
 
         # Let’s display the image bocs-start.png on the e-ink display
         self.eink.set_image('bocs-start.png')
 
-    def event_received(self, event):
+    def user_input_event_received(self, event):
         """
         This function is called whenever the user triggers an input event on the BOCS. The majority of your puzzle logic
         should probably be here (or be in another function called from here), as this will run every time the user does

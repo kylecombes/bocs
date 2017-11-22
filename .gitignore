@@ -1,3 +1,10 @@
+# Media files
+*.wav
+*.mp3
+*.png
+*.bmp
+/raspi/media/*
+
 # JetBrains
 .idea
 
