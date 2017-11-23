@@ -1,0 +1,149 @@
+/** ---------- Begin General/Overarching Styles ---------- **/
+
+* {
+    transition: all 0.3s;
+}
+
+.expand {
+    max-width: none !important;
+}
+
+.footer-content,
+.landing-page-section-content {
+    max-width: 1500px;
+    margin:0 auto;
+    padding: 6em 3em;
+}
+
+/** ---------- End General/Overarching Styles ---------- **/
+
+/** ---------- Begin Landing Page Styles ---------- **/
+
+.landing-section-title {
+    display: block;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.landing-section-title:after {
+    margin: 0 auto;
+    content: ' ';
+    display: block;
+    width: 1.5em;
+    border: 1px solid #fff;
+}
+
+.landing-section-title.light:after {
+    border-color: #000;
+}
+
+.landing-page-header {
+    margin: 6em 0;
+}
+
+.features {
+    color: white;
+    background-color: #259fc4;
+}
+
+.feature-list {
+    text-align: center;
+}
+
+.team {
+    color: white;
+    background-color: #016d8e;
+}
+
+.team-member {
+    text-align: center;
+    margin: 1.5em 0;
+}
+
+.team-member-name {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 0.7em;
+}
+
+a .team-member-name {
+    color: white;
+}
+
+a:hover .team-member-name {
+    color: #14c8ff;
+}
+
+.team-member-title {
+    margin: 0 auto;
+}
+
+.team-member-image {
+    display: block;
+    margin: 2em auto;
+    max-width: 10em;
+    clip-path: circle(5em at center);
+}
+
+.development .landing-page-section-content {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+.sprint {
+    display: flex;
+    flex-direction: row;
+}
+
+.sprint > div {
+    flex: 1 0 auto;
+}
+
+.sprint div.sprint-title-container {
+    flex-grow: 0;
+    text-transform: uppercase;
+}
+
+.sprint-title {
+    transform: rotate(-90deg);
+    text-align: center;
+}
+
+.sprint-col {
+    padding: 1.5em;
+    min-height: 10em; /* Temporary */
+}
+
+.sprint-col:not(:last-child) {
+    border-right: 1px solid gray;
+}
+
+/** ---------- End Landing Page Styles ---------- **/
+
+/** ---------- Begin Footer Styles ---------- **/
+
+footer {
+    background-color: #02212b;
+    color: #056c8c;
+    text-align: center;
+}
+
+footer .powered-by {
+    margin-bottom: 1.5em;
+    font-family: 'Helvetica', sans-serif;
+    font-weight: bold;
+    font-size: 2em;
+    text-transform: uppercase;
+}
+
+.footer-content .technologies {
+    text-align: center;
+}
+
+.footer-content .technologies img {
+    max-height: 4em;
+}
+
+/** ---------- End Footer Styles ---------- **/

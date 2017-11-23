@@ -1,0 +1,35 @@
+{
+  "members": [
+    {
+      "name": "Diego Alvarez",
+      "title": "Mechanical Design & Systems Integration",
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/18194806_275031302900421_6192671014163458858_n.jpg?oh=f5de476090655208a0276de59d5eebf6&oe=5AD45E39"
+    },
+    {
+      "name": "Kyle Combes",
+      "website": "http://kylecombes.com",
+      "title": "Software Architecture & Systems Integration",
+      "image": "https://media.licdn.com/mpr/mpr/shrinknp_200_200/AAEAAQAAAAAAAAbWAAAAJDlkODlkMThhLTE5NDQtNDcwNS04ZjZhLTQxY2FhNzMzN2Q4YQ.jpg"
+    },
+    {
+      "name": "Evan Cusato",
+      "title": "Mechanical Design & Systems Integration",
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/10320286_245836915607826_2738275783065956018_n.jpg?oh=b657968832bdf59e57c69cc66e086a06&oe=5AA62803"
+    },
+    {
+      "name": "Zack Davenport",
+      "title": "Mechanical Design & UX Design",
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-0/p160x160/21764845_1471713496258928_7107109868848793549_n.jpg?oh=52bf502160af42f48b13fd7e621f9a1a&oe=5A97EF62"
+    },
+    {
+      "name": "Connor Novak",
+      "title": "Mechanical Design & Systems Integration",
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/12742832_160284417687041_3079456826090206080_n.jpg?oh=dc9afe0619123013b68a40bd2f925670&oe=5A94992E"
+    },
+    {
+      "name": "Carl",
+      "title": "Moral Support",
+      "image": "http://gadgetsin.com/uploads/2011/05/google_android_squishables_1.jpg?x78359"
+    }
+  ]
+}

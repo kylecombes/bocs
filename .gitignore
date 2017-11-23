@@ -170,3 +170,7 @@ typings/
 
 # dotenv environment variables file
 .env
+=======
+
+# Node
+node_modules
