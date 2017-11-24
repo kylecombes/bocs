@@ -31,7 +31,7 @@ class BOCSMain:
                 pass  # Probably not an Arduino connected at this port
 
         # Connect to the stat/monitoring server
-        self.server = ServerComm('ws://localhost:2492', True)
+        self.server = ServerComm('ws://poe-bocs.herokuapp.com', True)
 
         self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
 

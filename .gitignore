@@ -5,6 +5,10 @@
 *.bmp
 /raspi/media/*
 
+# Random stuff
+.DSStore
+*.log
+
 # JetBrains
 .idea
 
