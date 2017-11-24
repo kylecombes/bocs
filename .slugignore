@@ -1,0 +1,5 @@
+# Tell Heroku to ignore all this stuff when packing the slug
+/arduino
+/raspi
+/webapp
+

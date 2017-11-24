@@ -1,0 +1,25 @@
+{
+  "name": "bocs-server",
+  "version": "1.0.0",
+  "description": "A leaderboard and admin server for the BOCS puzzle box.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kylecombes/poe-bocs.git"
+  },
+  "author": "Kyle Combes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kylecombes/poe-bocs/issues"
+  },
+  "homepage": "https://github.com/kylecombes/poe-bocs#readme",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "mongodb": "^2.2.33",
+    "ws": "^3.3.2"
+  }
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BOCS Websockets Testing</title>
+    <script type="text/javascript">
+        const socket = new WebSocket('ws://localhost:2492');
+
+        socket.addEventListener('open', (event) => console.log('Connected to server'));
+
+        function submitButtonClicked() {
+            const text = window.document.getElementById("input").value;
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(text);
+            } else {
+                alert("Not connected to server");
+            }
+        }
+    </script>
+</head>
+<body>
+<input id="input" type="text">
+<button onclick="submitButtonClicked()">Submit</button>
+</body>
+</html>

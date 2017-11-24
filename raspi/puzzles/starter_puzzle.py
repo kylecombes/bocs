@@ -4,9 +4,12 @@ from raspi.available_io import *
 
 
 class PuzzleName(BOCSPuzzle):
+
+    PUZZLE_ID = 'DEFINE ME!'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
+
     is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
 
-    def __init__(self, update_io_state, register_callback):
+    def __init__(self, stat_server, update_io_state, register_callback):
         """
         Runs once, when the puzzle is first started.
         :param update_io_state: a callback function to update the state of an I/O device
@@ -14,7 +17,7 @@ class PuzzleName(BOCSPuzzle):
             user input event occurs
         """
         # Perform some standard initialization defined by the BOCSPuzzle base class
-        BOCSPuzzle.__init__(self, update_io_state)
+        BOCSPuzzle.__init__(self, stat_server, update_io_state)
 
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)

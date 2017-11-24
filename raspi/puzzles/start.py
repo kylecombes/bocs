@@ -7,8 +7,8 @@ from raspi.io_states.start_button_state import StartButtonState
 
 class StartPrompt(BOCSPuzzle):
 
-    def __init__(self, update_io_state, register_callback):
-        BOCSPuzzle.__init__(self, update_io_state)
+    def __init__(self, stat_server, update_io_state, register_callback):
+        BOCSPuzzle.__init__(self, stat_server, update_io_state)
         # Show the BOCS logo and "Press Start" message on the e-ink display
         self.eink.set_image('bocs-start.png')
 
@@ -19,6 +19,11 @@ class StartPrompt(BOCSPuzzle):
 
         # Subscribe to input events
         register_callback(self.key_pressed)
+
+        time.sleep(1)
+
+        # Pretend we won!
+        self.report_attempt('start')
 
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
