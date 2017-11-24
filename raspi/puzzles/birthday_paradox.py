@@ -1,9 +1,11 @@
+from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
-from raspi.io_states.lcd_state import LCDState
 from raspi.available_io import *
 
 
-class BirthdayParadoxPuzzle:
+class BirthdayParadoxPuzzle(BOCSPuzzle):
+
+    PUZZLE_ID = 'bday-paradox'  # Used by stat server
 
     PROMPT = "How many people are needed in a room for the probability that 2 have the " \
             "same birthday to be greater than 50%?"
@@ -12,11 +14,11 @@ class BirthdayParadoxPuzzle:
     ANSWER = "23"
     is_solved = False
 
-    def __init__(self, update_io_state, register_callback):
+    def __init__(self, stat_server, update_io_state, register_callback):
+        BOCSPuzzle.__init__(self, stat_server, update_io_state)
+
         # Set the initial states of the inputs and outputs we'll be using
-        self.lcd_state = LCDState(self.PROMPT, self.LINE_2_PREFIX)
-        update_io_state(LCD_1, self.lcd_state)
-        self.update_io_state = update_io_state
+        self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
 
         # Subscribe to input events
         register_callback(self.key_pressed)
@@ -26,10 +28,12 @@ class BirthdayParadoxPuzzle:
             key = event.data
             if key == '#':  # Submit
                 if self.guess == self.ANSWER:
-                    line2 = "Correct!"
+                    self.eink.set_text('Correct!')
                     self.is_solved = True
+                    self.report_attempt(self.PUZZLE_ID)
                 else:
                     line2 = "Sorry, that's incorrect"
+                    self.report_attempt(self.PUZZLE_ID, self.guess)
             else:
                 if key == '*':  # Backspace
                     self.guess = self.guess[0:-1]
@@ -38,5 +42,4 @@ class BirthdayParadoxPuzzle:
 
                 line2 = self.LINE_2_PREFIX + self.guess
 
-            self.lcd_state.set_line(LCDState.BOTTOM_LINE, line2)
-            self.update_io_state(ARDUINO1, self.lcd_state)
+                self.eink.set_text('{}\n\n{}{}'.format(self.PROMPT, self.LINE_2_PREFIX, self.guess))

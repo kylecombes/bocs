@@ -4,6 +4,7 @@ from raspi.puzzles.start import StartPrompt
 from raspi.puzzles.drawer import DrawerPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
+from raspi.reporting.server_comm import ServerComm
 from raspi.available_io import *
 import time
 
@@ -29,11 +30,14 @@ class BOCSMain:
             except Exception:
                 pass  # Probably not an Arduino connected at this port
 
+        # Connect to the stat/monitoring server
+        self.server = ServerComm('ws://localhost:2492', True)
+
         self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
-        self.current_puzzle = self.puzzles[0](self.update_io_state, self.register_callback)
+        self.current_puzzle = self.puzzles[0](self.server, self.update_io_state, self.register_callback)
         self.run_puzzles()
 
     def run_puzzles(self):
