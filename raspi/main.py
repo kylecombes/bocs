@@ -4,7 +4,7 @@ from raspi.puzzles.start import StartPrompt
 from raspi.puzzles.drawer import DrawerPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
-from raspi.reporting.server_comm import ServerComm
+from raspi.telemetry.server_comm import ServerComm
 from raspi.available_io import *
 import time
 
