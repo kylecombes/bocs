@@ -11,4 +11,4 @@ class StartButtonState(IOState):
         Sets whether the start button LED is on or off.
         :param is_on: True for on, False for off
         """
-        self._data['sLED'] = 1 if is_on else 0
+        self._data['sLED'] = 'T' if is_on else 'F'
