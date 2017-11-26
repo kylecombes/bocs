@@ -20,10 +20,3 @@ class TrellisState(IOState):
             self._data[self.LIGHTS_KEY] |= 1 << id  # Set id-th bit to 1
         else:
             self._data[self.LIGHTS_KEY] &= ~(1 << id)  # Set id-th bit to 0
-
-    def set_visible(self, is_visible):
-        """
-        Shows and hides the input to/from the player.
-        :param is_visible: True to make the input visible, False to hide it
-        """
-        self._data['trellis_visible'] = 1 if is_visible else 0
