@@ -52,13 +52,14 @@ class FortyTwo(BOCSPuzzle):
         if event.id == EventType.TELEGRAPH_BUTTON_PRESS:  # See if the event was a start button press
             duration = event.data  # The amount of time the button was held down for (in ms)
             time_open = ((datetime.now() - self.last_press_time).total_seconds)/1000-duration
+            if time_open>scale*(3000+error):
+                input = [[0 for x in range(w)] for y in range(h)]
+                count1 = 0
             input[count1][0]=duration
             input[count1][1]=time_open
             count1+=1
             self.last_press_time = datetime.now()
-            if time_open>3000+error:
-                input = [[0 for x in range(w)] for y in range(h)]
-                count1 = 0
+
             if count1==9:
                 for x in range (0,9):
                     for y in range (0,1):
