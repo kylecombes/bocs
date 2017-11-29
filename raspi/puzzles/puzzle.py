@@ -7,25 +7,30 @@ class BOCSPuzzle:
 
     is_solved = False
 
-    def __init__(self, stat_server, update_io_state):
+    def __init__(self, init_bundle):
         # Save the I/O update callback for use later
-        self.update_io_state = update_io_state
+        self.update_io_state = init_bundle.get('update_io_state', None)
 
         # Initialize a state for the e-ink display
         self.eink = EInkController()
 
         # Save the connection to the statistic and monitoring server for reporting attempts later
-        self.server = stat_server
+        self.telemetry_server = init_bundle.get('telem_server', None)
+
+        self.sound_server = init_bundle.get('sound_server', None)
 
         # Save the start time
         self.start_time = datetime.now()
 
     def play_sound(self, path):
         """
-        Plays a sound over the speakers.
-        :param path: the filesystem path or web URL to the sound file
+        Plays a sound on the sound server, if connected, or through any connected speakers.
+        :param path: the filesystem path to the sound file
         """
-        playsound(path)
+        if self.sound_server:
+            self.sound_server.send_data({'command': 'play', 'filename': path})
+        else:
+            playsound(path)
 
     def get_elapsed_seconds(self):
         """
@@ -53,5 +58,5 @@ class BOCSPuzzle:
         if name:
             data['name'] = name
 
-        if self.server:
-            self.server.send_data(data)
+        if self.telemetry_server:
+            self.telemetry_server.send_data(data)

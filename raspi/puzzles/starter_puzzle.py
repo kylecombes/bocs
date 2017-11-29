@@ -9,7 +9,7 @@ class PuzzleName(BOCSPuzzle):
 
     is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
 
-    def __init__(self, stat_server, update_io_state, register_callback):
+    def __init__(self, init_bundle, register_callback):
         """
         Runs once, when the puzzle is first started.
         :param update_io_state: a callback function to update the state of an I/O device
@@ -17,7 +17,7 @@ class PuzzleName(BOCSPuzzle):
             user input event occurs
         """
         # Perform some standard initialization defined by the BOCSPuzzle base class
-        BOCSPuzzle.__init__(self, stat_server, update_io_state)
+        BOCSPuzzle.__init__(self, init_bundle)
 
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)

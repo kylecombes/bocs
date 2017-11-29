@@ -1,5 +1,4 @@
 from raspi.arduino_comm import ArduinoCommEventType as EventType
-from raspi.io_states.lcd_state import LCDState
 from raspi.available_io import *
 import time
 

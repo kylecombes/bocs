@@ -1,4 +1,5 @@
 from serial.tools.list_ports import comports
+from os import environ
 from raspi.arduino_comm import ArduinoComm
 from raspi.puzzles.start import StartPrompt
 from raspi.puzzles.drawer import DrawerPuzzle
@@ -19,7 +20,7 @@ class BOCSMain:
 
     outputs = {}
 
-    def __init__(self):
+    def __init__(self, sound_server=None):
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
         available_ports = BOCSMain.get_available_serial_ports()
@@ -31,13 +32,21 @@ class BOCSMain:
                 pass  # Probably not an Arduino connected at this port
 
         # Connect to the stat/monitoring server
-        self.server = ServerComm('ws://poe-bocs.herokuapp.com', True)
+        self.telemetry_server = ServerComm('ws://poe-bocs.herokuapp.com', True)
+
+        # Connect to the sound-playing server, if desired
+        self.sound_server = ServerComm(sound_server) if sound_server else None
 
         self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
-        self.current_puzzle = self.puzzles[0](self.server, self.update_io_state, self.register_callback)
+        self.puzzle_init_bundle = {
+            'update_io_state': self.update_io_state,
+            'telemetry_server': self.telemetry_server,
+            'sound_server': self.sound_server
+        }
+        self.current_puzzle = self.puzzles[0](self.puzzle_init_bundle, self.register_callback)
         self.run_puzzles()
 
     def run_puzzles(self):
@@ -122,5 +131,6 @@ class BOCSState:
 
 
 if __name__ == '__main__':
-    bocs = BOCSMain()
+    sound_server = environ['BOCS_SOUND_SERVER']
+    bocs = BOCSMain('ws://localhost:2222')
     bocs.shutdown()
