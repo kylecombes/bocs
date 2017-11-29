@@ -1,9 +1,11 @@
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
 from playsound import playsound
 from os import path, environ
+import subprocess
 import json
 
-MEDIA_FOLDER_PATH = environ['BOCS_MEDIA']
+MEDIA_FOLDER_PATH = environ.get('BOCS_MEDIA', False)
+SHUTDOWN_PASSWORD = environ.get('BOCS_PASSWORD', False)
 
 
 class AudioServerProtocol(WebSocketServerProtocol):
@@ -44,6 +46,24 @@ class AudioServerProtocol(WebSocketServerProtocol):
                 else:
                     print('Could not find file "{}"'.format(full_path))
 
+            elif command == 'shutdown' or command == 'reboot':  # Powering off RasPi, if password defined
+                if not SHUTDOWN_PASSWORD:
+                    print('Attempted to shut down Raspberry Pi, but no password set. Aborting...')
+                    return
+
+                # -h flag halts (shuts down) while -r restarts
+                do_reboot = command == 'reboot'
+                command = '/usr/bin/sudo /sbin/shutdown {} now'.format('-r' if do_reboot else '-h')
+
+                if data.get('password', None) == SHUTDOWN_PASSWORD:
+                    print("Attempting to {} Raspberry Pi (will only work if 'sudo shutdown' doesn't require "
+                          "password)'...".format('reboot' if do_reboot else 'shut down'))
+                    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+                    output = process.communicate()[0]
+                    print(output)
+                else:
+                    print('Power control authentication failed')
+
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {}".format(reason))
 
@@ -56,4 +76,5 @@ if __name__ == '__main__':
     factory.protocol = AudioServerProtocol
 
     reactor.listenTCP(2222, factory)
+    print('Starting BOCS audio server...')
     reactor.run()
