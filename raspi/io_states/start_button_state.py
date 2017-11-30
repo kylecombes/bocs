@@ -11,4 +11,7 @@ class StartButtonState(IOState):
         Sets whether the start button LED is on or off.
         :param is_on: True for on, False for off
         """
-        self._data['sLED'] = 1 if is_on else 0
+        self._data['sLED'] = is_on
+
+    def get_arduino_message(self):
+        return 'S{}'.format('T' if self._data['sLED'] else 'F')

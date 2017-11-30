@@ -17,6 +17,8 @@ class ServerComm:
         Initializes a new connection to the BOCS statistics server.
         :param uri: the URI of the server (e.g. ws://localhost:8000)
         """
+        if debug:
+            print('Connecting to WebSocket server at {}'.format(uri))
         self.connection = ServerCommThread(uri, self.message_received, debug)
         self.connection.start()
 

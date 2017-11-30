@@ -16,9 +16,12 @@ const int Key7 = 8;
 const int INNER_LIMIT = 9;
 const int OUTER_LIMIT = 10;
 
-int button_pressed = 0;       // Current button state
-int last_button_pressed = 0;  // Most recent button state
-int curr_state = 0;           // Current extended/retracted state of piano
+int button_pressed = 0;               // Current button state
+int last_button_pressed = 0;          // Most recent button state
+int curr_state = 0;                   // Current extended/retracted state of piano (1 for out, 0 for in)
+bool handshake_completed = false;     // Set to true when registration with computer completed
+unsigned long next_broadcast_time = 0;  // Used for doing handshake
+#define BROADCAST_INTERVAL 500        // Also used for doing handshake
 
 // Setup function ----------S----------S----------S----------S
 void setup() {
@@ -38,12 +41,24 @@ void setup() {
 
 // Loop function ----------L----------L----------L----------L
 void loop() {
+  if (handshake_completed) {
 
-  // Extends or retracts piano based on incoming msgs
-  curr_state = checkState(curr_state);
+    // Extends or retracts piano based on incoming msgs
+    curr_state = checkState(curr_state);
+  
+    if (curr_state) {
+      last_button_pressed = checkKeys(last_button_pressed);
+    }
 
-  if (curr_state) {
-    last_button_pressed = checkKeys(last_button_pressed);
+  } else { // Try to register with the computer
+    if (Serial.available() > 0) { // The computer is responding
+      String msg = Serial.readString();
+      handshake_completed = msg.equals("Hello from computer");
+      Serial.println(handshake_completed ? "Connected" : "Not connected");
+    } else if (millis() > next_broadcast_time) { // Cry out for a computer
+      Serial.println("Hello from pianoduino");
+      next_broadcast_time = millis() + BROADCAST_INTERVAL;
+    }
   }
 }
 
@@ -64,6 +79,7 @@ int checkState(int state) {
       // Waits until cart is fully retracted
       while (true) {
         //if (digitalRead(INNER_LIMIT)) {
+        // Can do while (digitalRead(INNER_LIMIT) < INNER_LIMIT) {}
         if (true) {
           break;
         }
@@ -130,8 +146,7 @@ int checkKeys(int last_button_pressed) {
   // Send message if button_pressed has changed
   if (button_pressed != last_button_pressed) {
     //String output = String(button_pressed);
-    String output = "{\"event_id\":\"2\",\"data\":\"" + String(button_pressed) + "\"}";
-    Serial.println(output);    
+    Serial.println("{\"event_id\":\"2\",\"data\":\"" + String(button_pressed) + "\"}");
   }
 
   return button_pressed;

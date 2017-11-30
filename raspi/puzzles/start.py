@@ -25,8 +25,6 @@ class StartPrompt(BOCSPuzzle):
         # Pretend we won!
         self.report_attempt('start')
 
-        self.play_sound('Music/Mac-chime.wav')
-
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
             # Turn off start button LED
@@ -35,8 +33,8 @@ class StartPrompt(BOCSPuzzle):
             self.update_io_state(ARDUINO1, start_button_led_state)
 
             # Play Mac startup chime
-            time.sleep(2)  # Wait a couple seconds, to emulate a Mac starting up
-            self.play_sound('media/Mac-chime.wav')
+            # self.pause(2)  # Wait a couple seconds, to emulate a Mac starting up
+            self.play_sound('Mac-chime.wav')
 
             # Mark puzzle as solved
             self.is_solved = True

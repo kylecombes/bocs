@@ -1,6 +1,7 @@
 from playsound import playsound
 from raspi.e_ink_controller import EInkController
 from datetime import datetime
+import time
 
 
 class BOCSPuzzle:
@@ -60,3 +61,11 @@ class BOCSPuzzle:
 
         if self.telemetry_server:
             self.telemetry_server.send_data(data)
+
+    @staticmethod
+    def pause(seconds):
+        """
+        Pauses everything for the given time
+        :param seconds: the number of seconds to pause for
+        """
+        time.sleep(seconds)

@@ -115,11 +115,8 @@ class ArduinoCommThread(Thread):
         # Get the data, if there is any
         data = raw_data.get('data', None)
 
-        # Get the options, if there are any
-        options = raw_data.get('options', None)
-
         # Create an event object
-        event = ArduinoCommEvent(int(event_id), data, options)
+        event = ArduinoCommEvent(int(event_id), data)
 
         # Pass the event to the callback
         if self.event_callback:
@@ -131,10 +128,9 @@ class ArduinoCommThread(Thread):
 
 class ArduinoCommEvent:
 
-    def __init__(self, event_id, data, extra=None):
+    def __init__(self, event_id, data):
         self.id = event_id
         self.data = data
-        self.extra = extra
 
 
 class ArduinoCommEventType:
@@ -142,6 +138,6 @@ class ArduinoCommEventType:
     TRELLIS_BUTTON_PRESS = 1
     PIANO_KEYBOARD_CHANGE = 2
     DRAWER_STATE_CHANGE = 3
-    TELEGRAPH_TAP = 4
+    TELEGRAPH_BUTTON_PRESS = 4
     RESISTOR_ARRAY_CHANGE = 5
     NUMERIC_KEYPAD_PRESS = 6

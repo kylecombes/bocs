@@ -127,10 +127,6 @@ void setup() {
   myservo.attach(SERVO_PIN);
   myservo.write(150);
 
-  // Configure LCD module
-//  lcd.begin(LCD_LINE_LENGTH, LCD_LINE_COUNT); // for 16 x 2 LCD module
-//  lcd.setBacklightPin(3, POSITIVE);
-
   // Configure Trellis keypad
   trellis.begin(0x70);
 
@@ -163,10 +159,7 @@ void loop() {
   
     // Check keypad for input
     checkForKeypadInput();
-    
-    // Update message on LCD if necessary
-  //  maybeUpdateDisplay();
-  
+
     // Check for Trellis button presses
     checkTrellisButtons();
   

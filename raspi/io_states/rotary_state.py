@@ -16,3 +16,6 @@ class RotaryState(IOState):
         :param mode: can be RotaryState.CLOSED, RotaryState.TELEGRAPH or RotaryState.TRELLIS
         """
         self._data['visible'] = mode
+
+    def get_arduino_message(self):
+        return ''

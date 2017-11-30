@@ -20,3 +20,6 @@ class TrellisState(IOState):
             self._data[self.LIGHTS_KEY] |= 1 << id  # Set id-th bit to 1
         else:
             self._data[self.LIGHTS_KEY] &= ~(1 << id)  # Set id-th bit to 0
+
+    def get_arduino_message(self):
+        return 'T{}'.format(self._data[self.LIGHTS_KEY])  # TODO Actually do this right
