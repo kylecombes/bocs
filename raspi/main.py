@@ -29,7 +29,7 @@ class BOCSMain:
         for port in available_ports:
             # Try to register each available port as an Arduino
             try:
-                ArduinoComm(self.event_fired, self.register_arduino, port)
+                ArduinoComm(self.event_fired, self.register_arduino, self.deregister_arduino, port)
             except Exception:
                 pass  # Probably not an Arduino connected at this port
 
@@ -99,6 +99,10 @@ class BOCSMain:
         if device_name in self.future_arduino_states:
             for update in self.future_arduino_states[device_name]:
                 self.transmit_io_state_update(device_name, update)
+            del self.future_arduino_states[device_name]
+
+    def deregister_arduino(self, device_name):
+        del self.outputs[device_name]
 
     def event_fired(self, event):
         if self.event_callback:

@@ -22,6 +22,9 @@ int curr_state = 0;                   // Current extended/retracted state of pia
 bool handshake_completed = false;     // Set to true when registration with computer completed
 unsigned long next_broadcast_time = 0;  // Used for doing handshake
 #define BROADCAST_INTERVAL 500        // Also used for doing handshake
+// Go back into handshake mode after 3 seconds of no heartbeat from computer
+unsigned long expectedHeartbeatByTime = 0;
+#define HEARTBEAT_TIMEOUT 10000
 
 // Setup function ----------S----------S----------S----------S
 void setup() {
@@ -50,11 +53,29 @@ void loop() {
       last_button_pressed = checkKeys(last_button_pressed);
     }
 
+    // Heartbeat stuff
+    unsigned long curTime = millis();
+
+    if (curTime > next_broadcast_time) {
+      Serial.println("ba-dump"); // Send heartbeat message
+      next_broadcast_time += BROADCAST_INTERVAL;
+    }
+
+    if (curTime > expectedHeartbeatByTime) {
+      // Haven't heard heartbeat from computer in too long
+      handshake_completed = false; // Go back into pairing mode
+    }
+
+    if (Serial.available() > 0 && Serial.readString() == "ba-dump") {
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
+      Serial.flush();
+    }
   } else { // Try to register with the computer
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
       handshake_completed = msg.equals("Hello from computer");
       Serial.println(handshake_completed ? "Connected" : "Not connected");
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     } else if (millis() > next_broadcast_time) { // Cry out for a computer
       Serial.println("Hello from pianoduino");
       next_broadcast_time = millis() + BROADCAST_INTERVAL;

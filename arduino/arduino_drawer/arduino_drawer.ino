@@ -7,6 +7,9 @@ bool lastSwitchValue = 1;
 bool handshakeCompleted = false;     // Set to true when registration with computer completed
 unsigned long nextBroadcastTime = 0;  // Used for doing handshake
 #define BROADCAST_INTERVAL 500        // Also used for doing handshake
+// Go back into handshake mode after 3 seconds of no heartbeat from computer
+unsigned long expectedHeartbeatByTime = 0;
+#define HEARTBEAT_TIMEOUT 10000
 
 void setup() {
   // initialize serial communication:
@@ -51,11 +54,29 @@ void loop() {
       }
       lastSwitchValue = testSwitch;
     }
-  } else {
+    
+    // Heartbeat stuff
+    unsigned long curTime = millis();
+
+    if (curTime > nextBroadcastTime) {
+      Serial.println("ba-dump"); // Send heartbeat message
+      nextBroadcastTime += BROADCAST_INTERVAL;
+    }
+
+    if (curTime > expectedHeartbeatByTime) {
+      // Haven't heard heartbeat from computer in too long
+      handshakeCompleted = false; // Go back into pairing mode
+    }
+
+    if (Serial.available() > 0 && Serial.readString() == "ba-dump") {
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
+    }
+  } else { // We have yet to establish a connection with the computer
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
       handshakeCompleted = msg.equals("Hello from computer");
       Serial.println(handshakeCompleted ? "Connected" : "Not connected");
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     } else if (millis() > nextBroadcastTime) { // Cry out for a computer
       Serial.println("Hello from arduino_drawer");
       nextBroadcastTime = millis() + BROADCAST_INTERVAL;

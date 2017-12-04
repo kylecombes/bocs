@@ -5,9 +5,13 @@
 // a keypad door actuation servo, and a telegraph input.
 
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
+// Handshake (pairing) and heartbeat
 bool handshakeCompleted = false;
 unsigned long nextBroadcastTime = 0;
 #define BROADCAST_INTERVAL 500
+// Go back into handshake mode after 3 seconds of no heartbeat from computer
+unsigned long expectedHeartbeatByTime = 0;
+#define HEARTBEAT_TIMEOUT 10000
 
 
 // ----- Begin start button light config ----- //
@@ -139,11 +143,26 @@ void loop() {
     // Check telegraph button
     checkTelegraphButton();
 
+
+    // Heartbeat stuff
+    unsigned long curTime = millis();
+
+    if (curTime > nextBroadcastTime) {
+      Serial.println("ba-dump"); // Send heartbeat message
+      nextBroadcastTime += BROADCAST_INTERVAL;
+    }
+
+    if (curTime > expectedHeartbeatByTime) {
+      // Haven't heard heartbeat from computer in too long
+      handshakeCompleted = false; // Go back into pairing mode
+    }
+
   } else { // We have yet to establish a connection with the computer
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
       handshakeCompleted = msg.equals("Hello from computer");
       Serial.println(handshakeCompleted ? "Connected" : "Not connected");
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     } else if (millis() > nextBroadcastTime) { // Cry out for a computer
       Serial.println("Hello from arduino1");
       nextBroadcastTime = millis() + BROADCAST_INTERVAL;
@@ -156,6 +175,11 @@ void checkSerialForMessages() {
   
   if (Serial.available() > 0) {
     String msg = Serial.readString();
+
+    if (msg == "ba-dump") {
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
+    }
+
     msg.trim();
     char outputId = msg[0];
     String payload = msg.substring(1); // The message payload is everything beyond the output identifier
@@ -168,7 +192,6 @@ void checkSerialForMessages() {
       }
     }
     else if (outputId == 'k') { // Keypad door position
-      //        goalKeypadDoorPosition = root["kpdr"];
       myservo.write(scaleServoPosition(payload.toInt()));
     }
     else if (outputId == 'T') { // Set the Trellis LEDs
