@@ -1,12 +1,10 @@
 #include <Adafruit_Trellis.h>
+#include "BlinkPattern.h"
 
 // This Arduino interfaces with a 16-character x 2-line LCD, a numeric keypad, an Adafruit Trellis keypad,
 // a keypad door actuation servo, and a telegraph input.
 
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
-// Communication with computer using JSON to allow sending key-value pairs
-#include <ArduinoJson.h>
-StaticJsonBuffer<200> jsonBuffer; // 200 chars (seems to be the max given our other memory requirements)
 bool handshakeCompleted = false;
 unsigned long nextBroadcastTime = 0;
 #define BROADCAST_INTERVAL 500
@@ -24,38 +22,10 @@ bool startButtonLightOn = false;
 short lastStartButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
-unsigned long lastStartButtonDebounceTime = 0; // The last time the button state changed
+unsigned long lastStartButtonDebounceTime = millis(); // The last time the button state changed
+BlinkDef startButtonBlinkPattern;
 
 // ----- End start button config ----- //
-
-
-// ----- Begin LCD config ----- //
-
-#include <Wire.h> // For I2C
-#include <LCD.h>
-#include <LiquidCrystal_I2C.h>
-
-#define LCD_LINE_LENGTH 16  // Number of characters per line
-#define LCD_LINE_COUNT 2    // Lines of text on the LCD
-#define LCD_SCROLL_DELTA 3  // Number of characters to scroll at a time
-#define TOP_LINE 0          // Index of top line
-#define BOTTOM_LINE 1       // Index of bottom line
-#define UPDATE_INTERVAL 10  // ms between display refreshes
-#define SCROLL_INTERVAL 800 // ms between scrolling
-#define INITIAL_PAUSE 1500  // ms to wait before scrolling after setting text
-#define REPLAY_DELAY 3000   // ms to wait before looping back to beginning
-
-String lines[2];              // The lines of text to display and scroll
-short scrollPos[] = {0, 0};   // Used to keep track of the current scroll positions of each line
-short scrollMax[] = {0, 0};   // Used to keep track of the maximum scroll positions for each line
-short lineLengths[] = {0, 0}; // Used to keep track of the length of the strings for each line
-unsigned long lastScrollTime = millis() + INITIAL_PAUSE; // Wait 3 seconds before beginning scrolling
-unsigned long lastPrintTime = 0;    // The last time the display was refreshed (to limit the refresh rate)
-String spaces = "                "; // Used for clearing single lines
-
-LiquidCrystal_I2C  lcd(0x3D, 2, 1, 0, 4, 5, 6, 7); // 0x3D is the I2C bus address for an unmodified backpack -- THIS MAY CHANGE BETWEEN DISPLAYS
-
-// ----- End LCD config ----- //
 
 
 // ----- Begin Adafruit Trellis config ----- //
@@ -146,7 +116,7 @@ void setup() {
 }
 
 void loop() {
-  if (handshakeCompleted) {
+  if (handshakeCompleted) { // We have already established a connection to the computer
     
     // Check computer comms
     checkSerialForMessages();
@@ -168,7 +138,8 @@ void loop() {
   
     // Check telegraph button
     checkTelegraphButton();
-  } else {
+
+  } else { // We have yet to establish a connection with the computer
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
       handshakeCompleted = msg.equals("Hello from computer");
@@ -186,35 +157,49 @@ void checkSerialForMessages() {
   if (Serial.available() > 0) {
     String msg = Serial.readString();
     msg.trim();
-    JsonObject& root = jsonBuffer.parse(msg);
-    if (root.success()) { // Successfully parsed JSON from computer
-      if (root.containsKey("0")) { // First line
-        setText(root["0"], TOP_LINE);
+    char outputId = msg[0];
+    String payload = msg.substring(1); // The message payload is everything beyond the output identifier
+
+    if (outputId == 'S') { // Turn start button LED ring on/off
+      if (payload.length() > 1) {
+        startButtonBlinkPattern = parseBlinkPattern(payload);
+      } else { // Length is 1, so just turning on or off indefinitely
+        startButtonBlinkPattern = parseBlinkPattern(payload+"10"); // Just pretend we have a duration (doesn't affect behavior)
       }
-      if (root.containsKey("1")) { // Second line
-        setText(root["1"], BOTTOM_LINE);
-      }
-      if (root.containsKey("bl")) { // Turn backlight on/off
-        String bl = root["bl"];
-        bool backlightOn = bl.equals("1");
-        lcd.setBacklight(backlightOn ? HIGH : LOW);
-      }
-      if (root.containsKey("kpdr")) { // Keypad door position
-        //        goalKeypadDoorPosition = root["kpdr"];
-        myservo.write(scaleServoPosition(root["kpdr"]));
-      }
-      if (root.containsKey("sLED")) { // Turn start button LED ring on/off
-        String val = root["sLED"];
-        startButtonLightOn = val.equals("1"); // Pass "1" to turn on
-      }
-      if (root.containsKey("tLEDs")) { // Set the Trellis LEDs
-        setTrellisLights(root["tLEDs"]);
-      }
-    } else {
-      Serial.println("Could not parse JSON");
+    }
+    else if (outputId == 'k') { // Keypad door position
+      //        goalKeypadDoorPosition = root["kpdr"];
+      myservo.write(scaleServoPosition(payload.toInt()));
+    }
+    else if (outputId == 'T') { // Set the Trellis LEDs
+      setTrellisLights(payload.toInt());
     }
   }
-  jsonBuffer.clear();
+}
+
+BlinkDef parseBlinkPattern(String msg) {
+  struct BlinkDef def;
+  short pos = 0;
+  String curTime = ""; // Build up the current number as we parse it
+  for (short i = 0; i < msg.length(); ++i) {
+    if (msg[i] == 'T' || msg[i] == 'F') {
+      if (curTime.length() > 0) {
+        def.durations[pos++] = curTime.toInt(); // Save the parsed time for the previous period and increment pos
+        curTime = "";
+      }
+      def.isOn[pos] = msg[i] == 'T';
+    } else if (msg[i] == 'R') {
+      def.repeats = true;
+    } else {
+      curTime += msg[i]; // Append a number
+    }
+  }
+  if (curTime.length() > 0) {
+    // Save the last parsed time
+    def.durations[pos] = curTime.toInt();
+  }
+  def.nextUpdateTime = millis();
+  return def;
 }
 
 // ---------- End computer communication logic ---------- //
@@ -250,7 +235,25 @@ void checkStartButton() {
 // ---------- Begin start button light logic ---------- //
 
 void updateStartButtonLEDState() {
-  digitalWrite(START_BUTTON_LED_PIN, startButtonLightOn ? HIGH : LOW);
+  if (startButtonBlinkPattern.nextUpdateTime != 0 && millis() > startButtonBlinkPattern.nextUpdateTime) {
+    // Turn the LED on if startButtonBlinkPattern.isOn at the current position is true, off otherwise
+    digitalWrite(START_BUTTON_LED_PIN, startButtonBlinkPattern.isOn[startButtonBlinkPattern.currentIndex] ? HIGH : LOW);
+
+    // Set how long to stay at this state (all in ms)
+    startButtonBlinkPattern.nextUpdateTime = millis() + startButtonBlinkPattern.durations[startButtonBlinkPattern.currentIndex];
+    
+    // Increment to the next position in the pattern
+    ++startButtonBlinkPattern.currentIndex;
+    
+    // Check if we reached the end of the pattern
+    if (startButtonBlinkPattern.durations[startButtonBlinkPattern.currentIndex] == 0) { // We reached the end of the pattern
+      if (startButtonBlinkPattern.repeats) { // Pattern repeating enabled
+        startButtonBlinkPattern.currentIndex = 0;
+      } else { // Pattern repeating disabled
+        startButtonBlinkPattern.nextUpdateTime = 0; // Disable updating state
+      }
+    }
+  }
 }
 
 // ---------- End start button light logic ---------- //
@@ -284,62 +287,6 @@ void maybeMoveDoor() {
 }
 
 // ---------- End keypad door servo logic ---------- //
-
-
-// ---------- Begin LCD logic ---------- //
-
-void maybeUpdateDisplay() {
-  if (millis() > lastPrintTime + UPDATE_INTERVAL) {
-    if (millis() > lastScrollTime + REPLAY_DELAY) {
-      scrollPos[0] = 0; // Doesn't work with scrolling multiple lines
-      lastScrollTime = millis() + INITIAL_PAUSE;
-    }
-    updateDisplay();
-  }
-}
-
-void setText(String str, short line) {
-  lines[line] = str;
-  // Set needed scroll amount (if necessary)
-  lineLengths[line] = str.length();
-  scrollMax[line] = lineLengths[line] - LCD_LINE_LENGTH;
-  if (scrollMax[line] < 0) {
-    scrollMax[line] = 0; // Don't need to scroll (shorter than line length)
-    lcd.setCursor(0, line); // Clear the line so there aren't any residual characters
-    lcd.print(spaces);
-  }
-  scrollPos[line] = 0;
-  lastScrollTime = millis() + INITIAL_PAUSE;
-}
-
-void updateDisplay() {
-  if (millis() > lastScrollTime + SCROLL_INTERVAL) { // Scroll the lines
-    for (short line = 0; line < 2; ++line) {
-      if (scrollPos[line] < scrollMax[line]) {
-        scrollPos[line] += LCD_SCROLL_DELTA;
-        if (scrollPos[line] > scrollMax[line]) {
-          scrollPos[line] = scrollMax[line];
-        }
-        lastScrollTime = millis();
-      }
-    }
-  }
-  // Update the text on the screen
-  printSubstring(lines[TOP_LINE], scrollPos[0], LCD_LINE_LENGTH, TOP_LINE);
-  printSubstring(lines[BOTTOM_LINE], scrollPos[1], LCD_LINE_LENGTH, BOTTOM_LINE);
-}
-
-void printSubstring(String str, short startPos, short numChars, short lcdLine) {
-  short strLen = str.length();
-  short endPos = startPos + numChars;
-  if (endPos > strLen) {
-    endPos = strLen;
-  }
-  lcd.setCursor(0, lcdLine);
-  lcd.print(str.substring(startPos, endPos));
-}
-
-// ---------- End LCD logic ---------- //
 
 
 // ---------- Begin Trellis logic ---------- //
