@@ -1,4 +1,3 @@
-#include <Adafruit_Trellis.h>
 #include "BlinkPattern.h"
 
 // This Arduino interfaces with a 16-character x 2-line LCD, a numeric keypad, an Adafruit Trellis keypad,
@@ -8,7 +7,7 @@
 // Handshake (pairing) and heartbeat
 bool handshakeCompleted = false;
 unsigned long nextBroadcastTime = 0;
-#define BROADCAST_INTERVAL 500
+#define BROADCAST_INTERVAL 1000
 // Go back into handshake mode after 3 seconds of no heartbeat from computer
 unsigned long expectedHeartbeatByTime = 0;
 #define HEARTBEAT_TIMEOUT 10000
@@ -17,26 +16,28 @@ unsigned long expectedHeartbeatByTime = 0;
 // ----- Begin start button light config ----- //
 #define START_BUTTON_LED_PIN 10
 bool startButtonLightOn = false;
+BlinkDef startButtonBlinkPattern;
 
 // ----- End start button light config ----- //
 
 
 // ----- Begin start button config ----- //
-#define START_BUTTON_PIN 11
+#define START_BUTTON_PIN 13
 short lastStartButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
 unsigned long lastStartButtonDebounceTime = millis(); // The last time the button state changed
-BlinkDef startButtonBlinkPattern;
 
 // ----- End start button config ----- //
 
 
 // ----- Begin Adafruit Trellis config ----- //
-
+#include <Adafruit_Trellis.h>
+#include "TrellisBlinkPattern.h"
 Adafruit_Trellis trellis = Adafruit_Trellis();
 #define TRELLIS_NUM_BUTTONS 16 // If you change this to be more than 16, you'll also need to change the data type
                                // the values are encoded using from short to something else.
+TrellisBlinkPattern trellisBlinkPattern;
 
 // ----- End Adafruit Trellis config ----- //
 
@@ -63,9 +64,9 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Neces
 // ----- Begin keypad door servo config ----- //
 
 #include <Servo.h>
-#define SERVO_PIN 9  // The pin the servo is connected to on the Arduino
-#define SERVO_MAX 37  // The maximum PWM value for the servo
-#define SERVO_MIN 8   // The minimum PWM value for the servo
+#define SERVO_PIN 11  // The pin the servo is connected to on the Arduino
+#define SERVO_MAX 140 // The maximum PWM value for the servo
+#define SERVO_MIN 33  // The minimum PWM value for the servo
 #define KEYPAD_DOOR_POSITION_DELTA 10 // Number of degrees to move servo by on each position update
 #define KEYPAD_DOOR_POSITION_CHANGE_DELAY 10 // Number of ms to wait between updating servo position (so it doesn't just jump suddenly)
 
@@ -135,6 +136,7 @@ void loop() {
     checkForKeypadInput();
 
     // Check for Trellis button presses
+    maybeUpdateTrellisLights();
     checkTrellisButtons();
   
     // Move door if necessary
@@ -195,7 +197,7 @@ void checkSerialForMessages() {
       myservo.write(scaleServoPosition(payload.toInt()));
     }
     else if (outputId == 'T') { // Set the Trellis LEDs
-      setTrellisLights(payload.toInt());
+      parseTrellisBlinkPattern(payload);
     }
   }
 }
@@ -326,6 +328,25 @@ void checkTrellisButtons() {
   }
 }
 
+void maybeUpdateTrellisLights() {
+  unsigned long curTime = millis();
+  if (curTime > trellisBlinkPattern.nextUpdateTime) {
+    ++trellisBlinkPattern.currentIndex;
+    // See if we've finished the sequence
+    if (trellisBlinkPattern.currentIndex >= trellisBlinkPattern.length) {
+      if (trellisBlinkPattern.repeats) { // Repeat the sequence
+        trellisBlinkPattern.currentIndex = 0;
+      } else { // Turn off all the lights and do nothing
+        setTrellisLights(0);
+        trellisBlinkPattern.nextUpdateTime = curTime + 1000000; // Delay running this again for a while
+        return;
+      }
+    }
+    setTrellisLights(trellisBlinkPattern.lights[trellisBlinkPattern.currentIndex]);
+    trellisBlinkPattern.nextUpdateTime = curTime + trellisBlinkPattern.durations[trellisBlinkPattern.currentIndex];
+  }
+}
+
 // Set which lights should be on by passing a boolean array, where true is on and false is off
 void setTrellisLights(short lightStatuses) {
   for (short i = 0; i < TRELLIS_NUM_BUTTONS; ++i) {
@@ -336,6 +357,37 @@ void setTrellisLights(short lightStatuses) {
     }
   }
   trellis.writeDisplay();
+}
+
+void parseTrellisBlinkPattern(String str) {
+  TrellisBlinkPattern newPattern;
+  String time = "";
+  String lights = "";
+  newPattern.length = 0;
+  newPattern.repeats = false;
+  bool parsingLights = true;
+  for (short i = 0; i < str.length(); ++i) {
+    if (str[i] == 'R') {
+      newPattern.repeats = true;
+    } else if (str[i] == ',') {
+      newPattern.lights[newPattern.length] = lights.toInt();
+      parsingLights = false;
+    } else if (str[i] == ';') {
+      newPattern.durations[newPattern.length] = time.toInt();
+      time = "";
+      lights = "";
+      ++newPattern.length;
+      parsingLights = true;
+    } else if (parsingLights) {
+      lights += str[i];
+    } else {
+      time += str[i];
+    }
+  }
+//  Serial.println("First delay: " + (String)newPattern.durations[0]);
+  setTrellisLights(newPattern.lights[0]);
+  newPattern.nextUpdateTime = millis() + newPattern.durations[0];
+  trellisBlinkPattern = newPattern;
 }
 
 // ---------- End Trellis logic ---------- //
