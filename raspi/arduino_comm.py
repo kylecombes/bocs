@@ -91,7 +91,7 @@ class ArduinoCommThread(Thread):
                     if self.state == DISCONNECTED:  # Handshake not completed yet
                         if data.startswith('Hello from '):
                             self.device_name = data[11:]
-                            self.cxn.write(b'Hello from computer')
+                            self.cxn.write(b'Hello from computer\n')
                             self.abort_time += timedelta(seconds=10)  # Give 10 seconds to complete
                             self.state = CONNECTING
 
@@ -102,7 +102,7 @@ class ArduinoCommThread(Thread):
                             print("Connected to " + self.device_name)
                             self.expected_heartbeat_by = now + self.HEARTBEAT_TIMEOUT
                         else:  # Arduino is being difficult. Keep introducing yourself.
-                            self.cxn.write(b'Hello from computer')
+                            self.cxn.write(b'Hello from computer\n')
                             print("Connecting to " + self.device_name)
                     elif data == "ba-dump":  # Heartbeat
                         if self.debug:

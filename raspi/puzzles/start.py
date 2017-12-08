@@ -22,9 +22,9 @@ class StartPrompt(BOCSPuzzle):
         register_callback(self.key_pressed)
 
         blink_pattern = TrellisState(repeat_pattern=True)
-        blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=200)
-        blink_pattern.add_blink_frame(TrellisLightConfig(38505), time=200)
-        blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=200)
+        blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=500)
+        blink_pattern.add_blink_frame(TrellisLightConfig(38505), time=500)
+        blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=500)
         self.update_io_state(ARDUINO1, blink_pattern)
 
     def key_pressed(self, event):

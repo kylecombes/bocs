@@ -6,7 +6,7 @@
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
 // Handshake (pairing) and heartbeat
 bool handshakeCompleted = false;
-bool usingHandshake = false;
+bool usingHandshake = true;
 unsigned long nextBroadcastTime = 0;
 #define BROADCAST_INTERVAL 1000
 // Go back into handshake mode after 3 seconds of no heartbeat from computer
@@ -163,7 +163,7 @@ void loop() {
   } else { // We have yet to establish a connection with the computer
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
-      handshakeCompleted = msg.equals("Hello from computer");
+      handshakeCompleted = msg.equals("Hello from computer\n");
       Serial.println(handshakeCompleted ? "Connected" : "Not connected");
       expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     } else if (millis() > nextBroadcastTime) { // Cry out for a computer
@@ -175,10 +175,16 @@ void loop() {
 
 // ---------- Begin computer communication logic ---------- //
 void checkSerialForMessages() {
-  
-  if (Serial.available() > 0) {
-    String msg = Serial.readString();
 
+  String msg = "";
+  while (Serial.available() > 0) {
+    char nextChar = Serial.read();
+    if (nextChar == '\n') break;
+    msg += (String)nextChar;
+  }
+  
+  if (msg.length() > 0) {
+    
     if (msg == "ba-dump") {
       expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     }
