@@ -36,7 +36,7 @@ class BunkerHillMonumentPuzzle(BOCSPuzzle):
             time.sleep(pause)
 
     def __init__(self, init_bundle, register_callback):
-        BOCSPuzzle.__init__(init_bundle)
+        BOCSPuzzle.__init__(self, init_bundle)
         # Set the initial states of the inputs and outputs we'll be using
         self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
 

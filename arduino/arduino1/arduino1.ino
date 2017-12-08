@@ -6,6 +6,7 @@
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
 // Handshake (pairing) and heartbeat
 bool handshakeCompleted = false;
+bool usingHandshake = false;
 unsigned long nextBroadcastTime = 0;
 #define BROADCAST_INTERVAL 1000
 // Go back into handshake mode after 3 seconds of no heartbeat from computer
@@ -14,7 +15,7 @@ unsigned long expectedHeartbeatByTime = 0;
 
 
 // ----- Begin start button light config ----- //
-#define START_BUTTON_LED_PIN 10
+#define START_BUTTON_LED_PIN 13
 bool startButtonLightOn = false;
 BlinkDef startButtonBlinkPattern;
 
@@ -22,7 +23,7 @@ BlinkDef startButtonBlinkPattern;
 
 
 // ----- Begin start button config ----- //
-#define START_BUTTON_PIN 13
+#define START_BUTTON_PIN 12
 short lastStartButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
@@ -81,7 +82,7 @@ unsigned long lastKeypadDoorMoveTime = 0;
 
 // ----- Begin telegraph button config ----- //
 
-#define TELEGRAPH_BUTTON_PIN 12
+#define TELEGRAPH_BUTTON_PIN 9
 short lastTelegraphButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
@@ -121,7 +122,7 @@ void setup() {
 }
 
 void loop() {
-  if (handshakeCompleted) { // We have already established a connection to the computer
+  if (handshakeCompleted || !usingHandshake) { // We have already established a connection to the computer
     
     // Check computer comms
     checkSerialForMessages();
