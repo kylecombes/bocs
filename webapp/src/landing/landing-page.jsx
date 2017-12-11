@@ -4,6 +4,7 @@ import LandingPageFeatures from './features';
 import Team from './team';
 import LandingPageOrigin from './origin';
 import Development from './development/development';
+import Leaderboard from '../leaderboard/leaderboard';
 
 
 export default class LandingPage extends Component {
@@ -13,6 +14,7 @@ export default class LandingPage extends Component {
             <div className="landing-page grid-x">
                 <LandingPageHeader/>
                 <LandingPageFeatures/>
+                <Leaderboard/>
                 <LandingPageOrigin/>
                 <Team/>
                 <Development/>
