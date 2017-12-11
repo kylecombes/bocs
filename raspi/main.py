@@ -1,6 +1,7 @@
 from serial.tools.list_ports import comports
 from os import environ
 from raspi.arduino_comm import ArduinoComm
+from raspi.puzzles.binary_trellis import BinaryTrellis
 from raspi.puzzles.forty_two import FortyTwoPuzzle
 from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
 from raspi.puzzles.start import StartPrompt
@@ -39,7 +40,7 @@ class BOCSMain:
         # Connect to the sound-playing server, if desired
         self.sound_server = ServerComm(sound_server) if sound_server else None
 
-        self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, FrequencyPuzzle, NothingPuzzle]
+        self.puzzles = [BinaryTrellis, StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, FrequencyPuzzle, NothingPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
@@ -57,7 +58,8 @@ class BOCSMain:
                 # Deregister event callback
                 self.event_callback = None
 
-                time.sleep(5)  # Pause for 5 seconds to show message before proceeding to next puzzle
+                if self.current_puzzle != self.puzzles[0]:
+                    time.sleep(5)  # Pause for 5 seconds to show message before proceeding to next puzzle
 
                 # Increment the index to the next puzzle
                 self.current_puzzle_index += 1

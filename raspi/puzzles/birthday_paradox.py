@@ -1,3 +1,4 @@
+from raspi.io_states.keypad_state import KeypadState
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.available_io import *
@@ -19,6 +20,8 @@ class BirthdayParadoxPuzzle(BOCSPuzzle):
 
         # Set the initial states of the inputs and outputs we'll be using
         self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+        self.keypad_state = KeypadState(visible=True)
+        self.update_io_state(ARDUINO1, self.keypad_state)
 
         # Subscribe to input events
         register_callback(self.key_pressed)
@@ -29,13 +32,15 @@ class BirthdayParadoxPuzzle(BOCSPuzzle):
             if key == '#':  # Submit
                 if self.guess == self.ANSWER:
                     self.eink.set_text('Correct!')
+                    self.keypad_state.set_visible(False)
+                    self.update_io_state(ARDUINO1, self.keypad_state)
                     self.is_solved = True
                     self.report_attempt(self.PUZZLE_ID)
                 else:
                     self.eink.set_text("Sorry, that's incorrect")
+                    self.report_attempt(self.PUZZLE_ID, self.guess)
                     self.pause(5)
                     self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
-                    # self.report_attempt(self.PUZZLE_ID, self.guess)
             else:
                 if key == '*':  # Backspace
                     self.guess = self.guess[0:-1]

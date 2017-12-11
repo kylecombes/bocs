@@ -65,17 +65,10 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Neces
 // ----- Begin keypad door servo config ----- //
 
 #include <Servo.h>
-#define SERVO_PIN 11  // The pin the servo is connected to on the Arduino
-#define SERVO_MAX 140 // The maximum PWM value for the servo
-#define SERVO_MIN 33  // The minimum PWM value for the servo
-#define KEYPAD_DOOR_POSITION_DELTA 10 // Number of degrees to move servo by on each position update
-#define KEYPAD_DOOR_POSITION_CHANGE_DELAY 10 // Number of ms to wait between updating servo position (so it doesn't just jump suddenly)
-
-Servo myservo;  // create servo object to control a servo
-short goalKeypadDoorPosition = SERVO_MIN;
-short currentKeypadDoorPosition = SERVO_MIN;
-short keypadDoorDeltaDirection = -1;
-unsigned long lastKeypadDoorMoveTime = 0;
+#define KEYPAD_SERVO_PIN 11    // The pin the servo is connected to on the Arduino
+#define KEYPAD_SERVO_OPEN 120  // The maximum PWM value for the servo
+#define KEYPAD_SERVO_CLOSED 18 // The minimum PWM value for the servo
+Servo keypadServo;
 
 // ----- End keypad door servo config ----- //
 
@@ -100,8 +93,8 @@ unsigned long buttonDepressTime = 0;
 void setup() {
   
   // Configure keypad door actuator
-  myservo.attach(SERVO_PIN);
-  myservo.write(150);
+  keypadServo.attach(KEYPAD_SERVO_PIN);
+  keypadServo.write(KEYPAD_SERVO_CLOSED);
 
   // Configure Trellis keypad
   trellis.begin(0x70);
@@ -139,9 +132,6 @@ void loop() {
     // Check for Trellis button presses
     maybeUpdateTrellisLights();
     checkTrellisButtons();
-  
-    // Move door if necessary
-  //  maybeMoveDoor();
   
     // Check telegraph button
     checkTelegraphButton();
@@ -201,7 +191,7 @@ void checkSerialForMessages() {
       }
     }
     else if (outputId == 'k') { // Keypad door position
-      myservo.write(scaleServoPosition(payload.toInt()));
+      keypadServo.write(payload == "1" ? KEYPAD_SERVO_OPEN : KEYPAD_SERVO_CLOSED);
     }
     else if (outputId == 'T') { // Set the Trellis LEDs
       parseTrellisBlinkPattern(payload);
@@ -301,24 +291,6 @@ void checkForKeypadInput() {
 }
 
 // ---------- End keypad logic ---------- //
-
-
-// ---------- Begin keypad door servo logic ---------- //
-
-// Scale the servo position input (range: [0, 1]) to the proper output value (range: [SERVO_MIN, SERVO_MAX])
-int scaleServoPosition(float pos) {
-  return ((int)((float)(SERVO_MAX - SERVO_MIN)) * pos) + SERVO_MIN;
-}
-
-void maybeMoveDoor() {
-  if (abs(goalKeypadDoorPosition - currentKeypadDoorPosition) > KEYPAD_DOOR_POSITION_DELTA &&
-      millis() > KEYPAD_DOOR_POSITION_CHANGE_DELAY + lastKeypadDoorMoveTime) {
-    currentKeypadDoorPosition += KEYPAD_DOOR_POSITION_DELTA * keypadDoorDeltaDirection;
-    myservo.write(scaleServoPosition(currentKeypadDoorPosition));
-  }
-}
-
-// ---------- End keypad door servo logic ---------- //
 
 
 // ---------- Begin Trellis logic ---------- //

@@ -3,6 +3,7 @@ from playsound import playsound
 from raspi.e_ink_controller import EInkController
 from datetime import datetime
 import time
+from raspi.arduino_comm import ArduinoCommEventType as EventType
 
 
 class BOCSPuzzle:
@@ -17,7 +18,7 @@ class BOCSPuzzle:
         self.eink = EInkController()
 
         # Save the connection to the statistic and monitoring server for reporting attempts later
-        self.telemetry_server = init_bundle.get('telem_server', None)
+        self.telemetry_server = init_bundle.get('telemetry_server', None)
 
         self.sound_server = init_bundle.get('sound_server', None)
 

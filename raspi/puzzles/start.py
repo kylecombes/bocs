@@ -27,6 +27,7 @@ class StartPrompt(BOCSPuzzle):
         blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=500)
         self.update_io_state(ARDUINO1, blink_pattern)
 
+
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
             # Turn off start button LED
@@ -37,6 +38,9 @@ class StartPrompt(BOCSPuzzle):
             # Play Mac startup chime
             # self.pause(2)  # Wait a couple seconds, to emulate a Mac starting up
             self.play_sound('Mac-chime.wav')
+
+            # Transmit start stat
+            self.report_attempt('start')
 
             # Mark puzzle as solved
             self.is_solved = True
