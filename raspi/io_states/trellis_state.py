@@ -38,6 +38,11 @@ class TrellisState(IOState):
             msg += '{},{};'.format(pattern, duration)
         return 'T{}{}'.format(msg, 'R' if self._data['repeat'] else '')
 
+    def get_blink_frame(self, index):
+        if index > len(self._data[self.LIGHTS_KEY]):
+            return False
+        return self._data[self.LIGHTS_KEY][index]
+
 
 class TrellisLightConfig:
     """
@@ -65,5 +70,5 @@ class TrellisLightConfig:
         else:
             self.lights &= ~(1 << id)  # Set id-th bit to 0
 
-    def __str__(self):
+    def get_msg_form(self):
         return str(self.lights)
