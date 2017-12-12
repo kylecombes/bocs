@@ -4,8 +4,9 @@
  * date: Nov 29, 2017
  *********************************************/
 
+#include <Servo.h>  // Provides PWM library for linear servo
 
-// Define pins for keys
+// Define pins for inputs/outputs
 const int Key1 = 2;
 const int Key2 = 3;
 const int Key3 = 4;
@@ -15,6 +16,9 @@ const int Key6 = 7;
 const int Key7 = 8;
 const int INNER_LIMIT = 9;
 const int OUTER_LIMIT = 10;
+const int SERVO_PIN = 11;
+
+Servo myservo;
 
 int button_pressed = 0;       // Current button state
 int last_button_pressed = 0;  // Most recent button state
@@ -34,6 +38,8 @@ void setup() {
   pinMode(Key7, INPUT);
   pinMode(INNER_LIMIT, INPUT);
   pinMode(OUTER_LIMIT, INPUT);
+  myservo.attach(SERVO_PIN);
+  
 }
 
 // Loop function ----------L----------L----------L----------L
@@ -59,12 +65,16 @@ int checkState(int state) {
     // If received retract msg
     if (msg == 0) {
       state = 0;
-      // TODO: Write servo to retract
+      Serial.println("Write1");
+      myservo.write(180);
       
       // Waits until cart is fully retracted
       while (true) {
         //if (digitalRead(INNER_LIMIT)) {
         if (true) {
+          delay(500);
+          Serial.println("Write2");
+          myservo.write(90);
           break;
         }
       }
@@ -73,12 +83,14 @@ int checkState(int state) {
     // If received extend msg
     else if (msg == 1) {
       state = 1;
-      // TODO: Write servo to extend
+      myservo.write(0);
       
       // Waits until cart is fully extended
       while (true) {
         //if (digitalRead(OUTER_LIMIT)) {
         if (true) {
+          delay(500);
+          myservo.write(90);
           break;
         }
       }
