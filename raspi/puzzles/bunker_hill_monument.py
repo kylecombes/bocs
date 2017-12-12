@@ -1,9 +1,9 @@
+from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
-from raspi.available_io import *
 import time
 
 
-class BunkerHillMonumentPuzzle:
+class BunkerHillMonumentPuzzle(BOCSPuzzle):
 
     PROMPT = "How many opportunities to trip does one face when attempting to view Boston from historic heights?"
     LINE_2_PREFIX = "Input: "
@@ -11,20 +11,9 @@ class BunkerHillMonumentPuzzle:
     ANSWER = "294"
     is_solved = False
 
-    def __init__(self, update_io_state, register_callback):
-        # Set the initial states of the inputs and outputs we'll be using
-        self.lcd_state = LCDState(self.PROMPT, self.LINE_2_PREFIX)
-        update_io_state(LCD_1, self.lcd_state)
-        self.update_io_state = update_io_state
-
-        # Subscribe to numeric keypad button press events
-        register_callback(self.key_pressed)
-
     def key_pressed(self, event):
 
         if event.id == EventType.NUMERIC_KEYPAD_PRESS:
-            # if len(self.guess) == 0:
-            #     return
 
             key = event.data
             pause = 0
@@ -43,6 +32,13 @@ class BunkerHillMonumentPuzzle:
 
                 line2 = self.LINE_2_PREFIX + self.guess
 
-            self.lcd_state.set_line(LCDState.BOTTOM_LINE, line2)
-            self.update_io_state(ARDUINO1, self.lcd_state)
+            self.eink.set_text('{}\n\n{}'.format(self.PROMPT, line2))
             time.sleep(pause)
+
+    def __init__(self, init_bundle, register_callback):
+        BOCSPuzzle.__init__(self, init_bundle)
+        # Set the initial states of the inputs and outputs we'll be using
+        self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+
+        # Subscribe to numeric keypad button press events
+        register_callback(self.key_pressed)

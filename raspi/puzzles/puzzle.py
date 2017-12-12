@@ -1,6 +1,8 @@
+import os
 from playsound import playsound
 from raspi.e_ink_controller import EInkController
 from datetime import datetime
+import time
 
 
 class BOCSPuzzle:
@@ -26,11 +28,16 @@ class BOCSPuzzle:
         """
         Plays a sound on the sound server, if connected, or through any connected speakers.
         :param path: the filesystem path to the sound file
+        :return True if the sound was played successfully, False otherwise
         """
         if self.sound_server:
             self.sound_server.send_data({'command': 'play', 'filename': path})
         else:
-            playsound(path)
+            if os.path.exists(path):
+                playsound(path)
+            else:
+                return False
+        return True
 
     def get_elapsed_seconds(self):
         """
@@ -60,3 +67,11 @@ class BOCSPuzzle:
 
         if self.telemetry_server:
             self.telemetry_server.send_data(data)
+
+    @staticmethod
+    def pause(seconds):
+        """
+        Pauses everything for the given time
+        :param seconds: the number of seconds to pause for
+        """
+        time.sleep(seconds)

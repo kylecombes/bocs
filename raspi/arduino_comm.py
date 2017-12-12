@@ -20,9 +20,10 @@ class ArduinoComm:
     :param port (string) the serial port to connect to (defaults to /dev/ttyACM0)
     :param baudrate (int) the baudrate to use (defaults to 9600)
     """
-    def __init__(self, event_callback, register_callback, port='/dev/ttyACM0', baudrate=9600):
+    def __init__(self, event_callback, register_callback, deregister_callback, port, baudrate=9600):
         self.event_callback = event_callback
         self.register_callback = register_callback
+        self.deregister_callback = deregister_callback
         self.port = port
         self.baudrate = baudrate
         self.cxn = Serial(self.port, baudrate=self.baudrate)
@@ -30,7 +31,8 @@ class ArduinoComm:
         self.start_listening()
 
     def start_listening(self):
-        self.thread = ArduinoCommThread(self.cxn, self, self.event_callback, self.register_callback)
+        self.thread = ArduinoCommThread(self.cxn, self, self.event_callback, self.register_callback,
+                                        self.deregister_callback)
         self.thread.setName('ArduinoCommThread for {}'.format(self.port))
         self.thread.start()
 
@@ -55,42 +57,73 @@ class ArduinoCommThread(Thread):
     do_run = True
     state = DISCONNECTED
     device_name = None
+    HEARTBEAT_TIMEOUT = timedelta(seconds=10)
+    expected_heartbeat_by = datetime.now()
+    next_heartbeat_time = datetime.now()
+    HEARTBEAT_INTERVAL = timedelta(seconds=2)
 
-    def __init__(self, cxn, arduino_comm, event_callback, register_callback, connection_timeout=1000):
+    def __init__(self, cxn, arduino_comm, event_callback, register_callback, deregister_callback,
+                 connection_timeout=60000, debug=False):
         Thread.__init__(self)
         self.cxn = cxn
         self.arduino_comm = arduino_comm
         self.event_callback = event_callback
         self.register_callback = register_callback
+        self.deregister_callback = deregister_callback
+        self.connection_timeout = timedelta(milliseconds=connection_timeout)
         self.abort_time = datetime.now() + timedelta(milliseconds=connection_timeout)
+        self.debug = debug
 
     def run(self):
 
         while self.do_run and (self.state == CONNECTED or self.abort_time > datetime.now()):
+
+            now = datetime.now()
+
             while self.cxn.inWaiting() > 1:
                 data = self.cxn.readline()
                 if data:  # Make sure the data is valid before trying to parse it
                     try:
                         data = data.decode('UTF-8')[0:-2]
-                        if self.state == DISCONNECTED:  # Handshake not completed yet
-                            if data.startswith('Hello from '):
-                                self.device_name = data[11:]
-                                self.cxn.write(b'Hello from computer')
-                                self.abort_time += timedelta(seconds=10)  # Give 10 seconds to complete
-                                self.state = CONNECTING
-
-                        elif self.state == CONNECTING:  # In the process of shaking hands (waiting on Arduino)
-                            if data == "Connected":  # Arduino acknowledged us
-                                self.state = CONNECTED
-                                self.register_callback(self.arduino_comm, self.device_name)
-                                print("Connected to " + self.device_name)
-                            else:  # Arduino is being difficult. Keep introducing yourself.
-                                self.cxn.write(b'Hello from computer')
-                                print("Connecting to " + self.device_name)
-                        else:
-                            self.process_event(data)
                     except UnicodeDecodeError:
-                        pass
+                        continue
+
+                    if self.state == DISCONNECTED:  # Handshake not completed yet
+                        if data.startswith('Hello from '):
+                            self.device_name = data[11:]
+                            self.cxn.write(b'Hello from computer\n')
+                            self.abort_time += timedelta(seconds=10)  # Give 10 seconds to complete
+                            self.state = CONNECTING
+
+                    elif self.state == CONNECTING:  # In the process of shaking hands (waiting on Arduino)
+                        if data == "Connected":  # Arduino acknowledged us
+                            self.state = CONNECTED
+                            self.register_callback(self.arduino_comm, self.device_name)
+                            print("Connected to " + self.device_name)
+                            self.expected_heartbeat_by = now + self.HEARTBEAT_TIMEOUT
+                        else:  # Arduino is being difficult. Keep introducing yourself.
+                            self.cxn.write(b'Hello from computer\n')
+                            print("Connecting to " + self.device_name)
+                    elif data == "ba-dump":  # Heartbeat
+                        if self.debug:
+                            print('Received heartbeat')
+                        self.expected_heartbeat_by = now + self.HEARTBEAT_TIMEOUT
+                    else:
+                        self.process_event(data)
+
+            # Arduino heartbeat
+            if self.state == CONNECTED and datetime.now() > self.expected_heartbeat_by:
+                self.state = DISCONNECTED
+                self.abort_time = now + self.connection_timeout
+                self.deregister_callback(self.device_name)
+                print('Arduino heartbeat timeout')
+
+            # Computer heartbeat
+            if self.state == CONNECTED and datetime.now() > self.next_heartbeat_time:
+                self.cxn.write(b'ba-dump')
+                self.next_heartbeat_time += self.HEARTBEAT_INTERVAL
+                if self.debug:
+                    print('Sending heartbeat')
 
     """
     Handles deserializing the event data and calling the event callback.
@@ -115,11 +148,8 @@ class ArduinoCommThread(Thread):
         # Get the data, if there is any
         data = raw_data.get('data', None)
 
-        # Get the options, if there are any
-        options = raw_data.get('options', None)
-
         # Create an event object
-        event = ArduinoCommEvent(int(event_id), data, options)
+        event = ArduinoCommEvent(int(event_id), data)
 
         # Pass the event to the callback
         if self.event_callback:
@@ -131,10 +161,9 @@ class ArduinoCommThread(Thread):
 
 class ArduinoCommEvent:
 
-    def __init__(self, event_id, data, extra=None):
+    def __init__(self, event_id, data):
         self.id = event_id
         self.data = data
-        self.extra = extra
 
 
 class ArduinoCommEventType:
@@ -142,6 +171,6 @@ class ArduinoCommEventType:
     TRELLIS_BUTTON_PRESS = 1
     PIANO_KEYBOARD_CHANGE = 2
     DRAWER_STATE_CHANGE = 3
-    TELEGRAPH_TAP = 4
+    TELEGRAPH_BUTTON_PRESS = 4
     RESISTOR_ARRAY_CHANGE = 5
     NUMERIC_KEYPAD_PRESS = 6

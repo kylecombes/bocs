@@ -4,4 +4,5 @@ can be used by other classes to refer to specific input/outputs.
 """
 
 ARDUINO1 = 'arduino1'
-DRAWER = 'drawer'
+DRAWER = 'arduino_drawer'
+PIANO = 'pianoduino'

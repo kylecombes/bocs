@@ -1,4 +1,5 @@
 import time
+from raspi.io_states.trellis_state import TrellisState, TrellisLightConfig
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.available_io import *
@@ -20,12 +21,11 @@ class StartPrompt(BOCSPuzzle):
         # Subscribe to input events
         register_callback(self.key_pressed)
 
-        time.sleep(1)
-
-        # Pretend we won!
-        self.report_attempt('start')
-
-        self.play_sound('Music/Mac-chime.wav')
+        blink_pattern = TrellisState(repeat_pattern=True)
+        blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=500)
+        blink_pattern.add_blink_frame(TrellisLightConfig(38505), time=500)
+        blink_pattern.add_blink_frame(TrellisLightConfig(1632), time=500)
+        self.update_io_state(ARDUINO1, blink_pattern)
 
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
@@ -35,8 +35,8 @@ class StartPrompt(BOCSPuzzle):
             self.update_io_state(ARDUINO1, start_button_led_state)
 
             # Play Mac startup chime
-            time.sleep(2)  # Wait a couple seconds, to emulate a Mac starting up
-            self.play_sound('media/Mac-chime.wav')
+            # self.pause(2)  # Wait a couple seconds, to emulate a Mac starting up
+            self.play_sound('Mac-chime.wav')
 
             # Mark puzzle as solved
             self.is_solved = True

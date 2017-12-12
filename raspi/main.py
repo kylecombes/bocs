@@ -1,8 +1,10 @@
 from serial.tools.list_ports import comports
 from os import environ
 from raspi.arduino_comm import ArduinoComm
+from raspi.puzzles.forty_two import FortyTwoPuzzle
+from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
 from raspi.puzzles.start import StartPrompt
-from raspi.puzzles.drawer import DrawerPuzzle
+from raspi.puzzles.nothing_puzzle import NothingPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
 from raspi.telemetry.server_comm import ServerComm
@@ -20,24 +22,24 @@ class BOCSMain:
 
     outputs = {}
 
-    def __init__(self, sound_server=None):
+    def __init__(self, telemetry_server=None, sound_server=None):
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
         available_ports = BOCSMain.get_available_serial_ports()
         for port in available_ports:
             # Try to register each available port as an Arduino
             try:
-                ArduinoComm(self.event_fired, self.register_arduino, port)
+                ArduinoComm(self.event_fired, self.register_arduino, self.deregister_arduino, port)
             except Exception:
                 pass  # Probably not an Arduino connected at this port
 
         # Connect to the stat/monitoring server
-        self.telemetry_server = ServerComm('ws://poe-bocs.herokuapp.com', True)
+        self.telemetry_server = ServerComm(telemetry_server, True) if telemetry_server else None
 
         # Connect to the sound-playing server, if desired
         self.sound_server = ServerComm(sound_server) if sound_server else None
 
-        self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, DrawerPuzzle]
+        self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, FrequencyPuzzle, NothingPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
@@ -62,7 +64,7 @@ class BOCSMain:
                 # Check if the last puzzle was just finished
                 if self.current_puzzle_index < len(self.puzzles):
                     puzzle_class = self.puzzles[self.current_puzzle_index]
-                    self.current_puzzle = puzzle_class(self.update_io_state, self.register_callback)
+                    self.current_puzzle = puzzle_class(self.puzzle_init_bundle, self.register_callback)
                 else:
                     self.state.phase = BOCSState.STOPPING
             time.sleep(0.005)  # Sleep for 50ms
@@ -83,8 +85,9 @@ class BOCSMain:
     def transmit_io_state_update(self, io_name, new_state):
 
         # Send the new state to the Arduino
-        json_str = new_state.serialize()
-        self.outputs[io_name].send_data(json_str)
+        msg = new_state.get_arduino_message()
+        print('Transmitting {} to {}'.format(msg, io_name))
+        self.outputs[io_name].send_data(msg)
 
         # Save the state, just in case we want to know what it is
         self.state.io_states[io_name] = new_state
@@ -96,6 +99,10 @@ class BOCSMain:
         if device_name in self.future_arduino_states:
             for update in self.future_arduino_states[device_name]:
                 self.transmit_io_state_update(device_name, update)
+            del self.future_arduino_states[device_name]
+
+    def deregister_arduino(self, device_name):
+        del self.outputs[device_name]
 
     def event_fired(self, event):
         if self.event_callback:
@@ -109,7 +116,7 @@ class BOCSMain:
         """
         Gets all available /dev/ttyACM# COM ports.
         """
-        return [port.device for port in comports() if port.name.startswith('ttyACM')]
+        return [port.device for port in comports() if port.name.startswith('ttyACM') or port.name.startswith('ttyUSB')]
 
 
 class BOCSState:
@@ -131,6 +138,7 @@ class BOCSState:
 
 
 if __name__ == '__main__':
-    sound_server = environ['BOCS_SOUND_SERVER']
-    bocs = BOCSMain('ws://localhost:2222')
+    telemetry_server = environ.get('BOCS_TELEMETRY_SERVER', False)
+    sound_server = environ.get('BOCS_SOUND_SERVER', False)
+    bocs = BOCSMain(telemetry_server, sound_server)
     bocs.shutdown()

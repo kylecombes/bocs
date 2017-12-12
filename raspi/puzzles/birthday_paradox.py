@@ -14,8 +14,8 @@ class BirthdayParadoxPuzzle(BOCSPuzzle):
     ANSWER = "23"
     is_solved = False
 
-    def __init__(self, stat_server, update_io_state, register_callback):
-        BOCSPuzzle.__init__(self, stat_server, update_io_state)
+    def __init__(self, init_bundle, register_callback):
+        BOCSPuzzle.__init__(self, init_bundle)
 
         # Set the initial states of the inputs and outputs we'll be using
         self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
@@ -32,8 +32,10 @@ class BirthdayParadoxPuzzle(BOCSPuzzle):
                     self.is_solved = True
                     self.report_attempt(self.PUZZLE_ID)
                 else:
-                    line2 = "Sorry, that's incorrect"
-                    self.report_attempt(self.PUZZLE_ID, self.guess)
+                    self.eink.set_text("Sorry, that's incorrect")
+                    self.pause(5)
+                    self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+                    # self.report_attempt(self.PUZZLE_ID, self.guess)
             else:
                 if key == '*':  # Backspace
                     self.guess = self.guess[0:-1]
