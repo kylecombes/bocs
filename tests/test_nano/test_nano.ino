@@ -8,8 +8,8 @@
 #define KEY_5_PIN             6
 #define KEY_6_PIN             7
 #define KEY_7_PIN             8
-#define EXTENDED_LIMIT_PIN    9
-#define RETRACTED_LIMIT_PIN  10
+#define EXTENDED_LIMIT_PIN    10
+#define RETRACTED_LIMIT_PIN  9
 #define SERVO_PIN            11
 //                           12
 //                           13
@@ -64,7 +64,7 @@ void testKeyboard() {
 void testSlide(byte extend, byte retract) {
   Serial.println("Testing Servo");
   Serial.println("Extending");
-  slideServo.write(0);
+  slideServo.write(135);
   while(true) {
     if (digitalRead(extend)) {
       break;
@@ -72,7 +72,7 @@ void testSlide(byte extend, byte retract) {
   }
 
   Serial.println("Retracting");
-  slideServo.write(180);
+  slideServo.write(45);
   while(true) {
     if (digitalRead(retract)) {
       break;
