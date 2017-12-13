@@ -23,7 +23,7 @@ class VictoryPuzzle(BOCSPuzzle):
         register_callback(self.user_input_event_received)
 
         # Let’s display the image bocs-start.png on the e-ink display
-        self.eink.set_image('media/victory-qr.png')
+        self.eink.set_image('victory-qr.png')
 
     def user_input_event_received(self, event):
         """

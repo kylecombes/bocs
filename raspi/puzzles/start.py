@@ -14,7 +14,7 @@ class StartPrompt(BOCSPuzzle):
     def __init__(self, init_bundle, register_callback):
         BOCSPuzzle.__init__(self, init_bundle)
         # Show the BOCS logo and "Press Start" message on the e-ink display
-        self.eink.set_image('media/bocs-start.png')
+        self.eink.set_image('bocs-start.png')
 
         # Subscribe to input events
         register_callback(self.key_pressed)

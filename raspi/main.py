@@ -102,6 +102,7 @@ class BOCSMain:
 
                 elif self.current_puzzle_index == len(self.puzzles):  # Current sequence finished
                     self.current_puzzle = self.VICTORY_PUZZLE(self.puzzle_init_bundle, self.register_callback)
+                    self.current_puzzle_index += 1
 
                 elif self.current_puzzle_index > len(self.puzzles):  # Victory puzzle finished
                     if not self.load_next_puzzle_set():  # No more puzzle sets to play
