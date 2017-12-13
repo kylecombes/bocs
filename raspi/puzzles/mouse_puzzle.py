@@ -43,6 +43,7 @@ class MousePuzzle(BOCSPuzzle):
         """
 
         if event.id == EventType.DRAWER_STATE_CHANGE:
+            print(event.data)
             if event.data == '0':  # Drawer closed
                 # if event.extra:
                 #     self.eink.set_text("Sorry, that's incorrect.")
