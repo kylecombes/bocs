@@ -1,8 +1,8 @@
 
 // this constant won't change. It's the pin number of the sensor's output:
-const int pingPin = 7;
-const int echoPin = 6;
-const int switchPin = 5;
+const int pingPin = 6;
+const int echoPin = 5;
+const int switchPin = 4;
 bool lastSwitchValue = 1;
 bool handshakeCompleted = false;     // Set to true when registration with computer completed
 bool usingHandshake = true;
@@ -33,13 +33,11 @@ void sendPing(int pin) {
 
 void loop() {
   if (handshakeCompleted || !usingHandshake) {
-    // establish variables for duration of the ping, and the distance result
-    long duration, cm;
     
     // SENSOR
     sendPing(pingPin);
-    duration = pulseIn(echoPin, HIGH);
-    cm = microsecondsToCentimeters(duration);
+    short duration = pulseIn(echoPin, HIGH);
+    float cm = microsecondsToCentimeters(duration) - 30.0;
     
     // SWITCH
     int testSwitch = digitalRead(switchPin);
@@ -48,7 +46,7 @@ void loop() {
     if (testSwitch != lastSwitchValue) {
       if (testSwitch == 1) { // Door open
         Serial.print("{\"event_id\": \"3\", \"data\": \"");
-        Serial.print(6-cm);
+        Serial.print(cm);
         Serial.println("\"}");
       } else {
         Serial.println("{\"event_id\": \"3\"}");
@@ -85,9 +83,9 @@ void loop() {
   }
 }
 
-long microsecondsToCentimeters(long microseconds) {
+float microsecondsToCentimeters(long microseconds) {
   // The speed of sound is 340 m/s or 29 microseconds per centimeter.
   // The ping travels out and back, so to find the distance of the object we
   // take half of the distance travelled.
-  return microseconds / 29 / 2;
+  return ((float)microseconds) / 14.5;
 }

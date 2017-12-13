@@ -3,9 +3,9 @@ from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.available_io import *
 
 
-class PuzzleName(BOCSPuzzle):
+class VictoryPuzzle(BOCSPuzzle):
 
-    PUZZLE_ID = 'DEFINE ME!'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
+    PUZZLE_ID = 'Victory'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
 
     is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
 
@@ -23,7 +23,7 @@ class PuzzleName(BOCSPuzzle):
         register_callback(self.user_input_event_received)
 
         # Let’s display the image bocs-start.png on the e-ink display
-        self.eink.set_image('bocs-start.png')
+        self.eink.set_image('media/victory-qr.png')
 
     def user_input_event_received(self, event):
         """

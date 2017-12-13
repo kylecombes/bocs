@@ -1,15 +1,17 @@
+from random import randint
+
 from serial.tools.list_ports import comports
 from os import environ
 from raspi.arduino_comm import ArduinoComm
-from raspi.puzzles.binary_trellis import BinaryTrellis
+from raspi.puzzles.mouse_puzzle import MousePuzzle
 from raspi.puzzles.forty_two import FortyTwoPuzzle
 from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
 from raspi.puzzles.start import StartPrompt
 from raspi.puzzles.nothing_puzzle import NothingPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
+from raspi.puzzles.victory import VictoryPuzzle
 from raspi.telemetry.server_comm import ServerComm
-from raspi.available_io import *
 import time
 
 
@@ -17,9 +19,19 @@ class BOCSMain:
 
     do_run = True
     event_callback = None
-    current_puzzle = None
-    current_puzzle_index = 0
+    puzzles = []
+    current_puzzle_index = -1  # Begin with start puzzle
     future_arduino_states = {}  # State updates are queued here until the given Arduino is connected
+
+    PUZZLE_SETS = [
+        [MousePuzzle],  # TODO Append Trellis game
+        [NothingPuzzle, FrequencyPuzzle],
+        [FortyTwoPuzzle]  # TODO Prepend 7-8-9
+    ]
+    START_PROMPT = StartPrompt
+    VICTORY_PUZZLE = VictoryPuzzle
+
+    completed_puzzle_sets = []
 
     outputs = {}
 
@@ -32,7 +44,7 @@ class BOCSMain:
             try:
                 ArduinoComm(self.event_fired, self.register_arduino, self.deregister_arduino, port)
             except Exception:
-                pass  # Probably not an Arduino connected at this port
+                print('WARNING: Could not connect to {}'.format(port))  # Probably not an Arduino connected at this port
 
         # Connect to the stat/monitoring server
         self.telemetry_server = ServerComm(telemetry_server, True) if telemetry_server else None
@@ -40,7 +52,7 @@ class BOCSMain:
         # Connect to the sound-playing server, if desired
         self.sound_server = ServerComm(sound_server) if sound_server else None
 
-        self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, FrequencyPuzzle, NothingPuzzle]
+        self.puzzles = self.PUZZLE_SETS[randint(0, len(self.PUZZLE_SETS)-1)]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
@@ -49,8 +61,27 @@ class BOCSMain:
             'telemetry_server': self.telemetry_server,
             'sound_server': self.sound_server
         }
-        self.current_puzzle = self.puzzles[0](self.puzzle_init_bundle, self.register_callback)
+        self.current_puzzle = self.START_PROMPT(self.puzzle_init_bundle, self.register_callback)
         self.run_puzzles()
+
+    def load_next_puzzle_set(self, allow_repeat=False):
+        """
+        Selects the next puzzle set.
+        :param allow_repeat: if True, will allow selection of a previously-played puzzle set. If False, no repeating
+            allowed.
+            :return True if successfully loaded next puzzle set, False if no more to load
+        """
+        if not allow_repeat:  # Don't allow repeating of puzzle sets
+            if len(self.completed_puzzle_sets) == len(self.PUZZLE_SETS):
+                return False  # Played all puzzle sets and repeating not allowed
+            index = randint(0, len(self.PUZZLE_SETS))
+            while index in self.completed_puzzle_sets:
+                index = randint(0, len(self.PUZZLE_SETS))
+        else:  # Repeating okay
+            index = randint(0, len(self.PUZZLE_SETS))
+        self.puzzles = self.PUZZLE_SETS[index]  # Select the puzzle set
+        self.current_puzzle_index = 0
+        return True
 
     def run_puzzles(self):
         while not self.state.phase == BOCSState.STOPPING:
@@ -58,17 +89,24 @@ class BOCSMain:
                 # Deregister event callback
                 self.event_callback = None
 
-                # if type(self.current_puzzle) != self.puzzles[0]:
-                #     time.sleep(2)  # Pause for 5 seconds to show message before proceeding to next puzzle
+                if self.current_puzzle_index != -1:  # Don't delay after start "puzzle"
+                    time.sleep(2)  # Pause for 5 seconds to show message before proceeding to next puzzle
 
                 # Increment the index to the next puzzle
                 self.current_puzzle_index += 1
+
                 # Check if the last puzzle was just finished
-                if self.current_puzzle_index < len(self.puzzles):
+                if self.current_puzzle_index < len(self.puzzles):  # More puzzles left to play in current sequence
                     puzzle_class = self.puzzles[self.current_puzzle_index]
                     self.current_puzzle = puzzle_class(self.puzzle_init_bundle, self.register_callback)
-                else:
-                    self.state.phase = BOCSState.STOPPING
+
+                elif self.current_puzzle_index == len(self.puzzles):  # Current sequence finished
+                    self.current_puzzle = self.VICTORY_PUZZLE(self.puzzle_init_bundle, self.register_callback)
+
+                elif self.current_puzzle_index > len(self.puzzles):  # Victory puzzle finished
+                    if not self.load_next_puzzle_set():  # No more puzzle sets to play
+                        self.state.phase = BOCSState.STOPPING
+
             time.sleep(0.005)  # Sleep for 5ms
 
     def shutdown(self):

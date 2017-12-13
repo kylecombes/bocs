@@ -62,11 +62,11 @@ class ServerCommThread(Thread):
 
     def on_error(self, ws, error):
         self.state = ServerComm.CLOSED
-        print('Error: \n' + error)
+        print('Server error:', error.strerror)
 
     def on_close(self, message):
         self.state = ServerComm.CLOSED
-        print('Closed')
+        print('Server connection closed')
 
     def send_data(self, data):
         """

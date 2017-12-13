@@ -3,11 +3,12 @@ from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.io_states.rotary_state import RotaryState
 from raspi.available_io import *
 from datetime import datetime
+import math
 
 
 class FortyTwoPuzzle(BOCSPuzzle):
 
-    PUZZLE_ID = 'forty_two!'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
+    PUZZLE_ID = '6x9'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
 
     PROMPT = "Here is something you may recognize.\n" \
              "After all, this truth was discovered by one of your kind.\n\n" \
@@ -23,25 +24,24 @@ class FortyTwoPuzzle(BOCSPuzzle):
         "That is really too bad.\nMaybe it is not intelligence they said you humans had.",
         "I am starting to grow weary of this.\nI think something has gone amiss.",
         "Now I am very much perturbed.\nI'll grant you another turn.",
-        "You have exhausted my patience and my creativity. Unless you give me the correct answer, I will say nothing " \
+        "You have exhausted my patience and my creativity. Unless you give me the correct answer, I will say nothing "
         "more than \"wrong\"."
     ]
     CORRECT_RESPONSE = "Marvelous!\nYou have discovered the truth of 42.\nPerhaps not so much is beyond you."
+
     attempt_count = 0
-    scale = 1
-    error = 200  # +||- in milliseconds
-    count1 = 0
-    count2 = 0
-    # the array of input time values the switch is open and closed for
-    model = scale*[[1000, 1000],[1000, 1000],[1000, 1000],[1000, 1000],[3000, 1000],[1000, 1000],[3000, 1000],[3000, 1000],[3000, 1000],[3000, 1000]]
-    user_input = [[0 for x in range(9)] for y in range(2)]
-    # the array of model time values to compare the input to
-    is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
+    THRESHOLD = 0.2  # error threshold (seconds)
+    CORRECT_SEQUENCE_CLOSED = [1, 1, 1, 1, 3, 1, 3, 3, 3, 3]
+    CORRECT_SEQUENCE_OPEN = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    SLOT_COUNT = len(CORRECT_SEQUENCE_CLOSED) + len(CORRECT_SEQUENCE_OPEN)  # Number of slots to correctly enter
+    RESET_TIME = 5  # Number of seconds to reset input after
+    current_pos = 0
+    current_correct_count = 0
 
     def __init__(self, init_bundle, register_callback):
         """
         Runs once, when the puzzle is first started.
-        :param update_io_state: a callback function to update the state of an I/O device
+        :param init_bundle: a callback function to update the state of an I/O device
         :param register_callback: a callback function to register the function that should be called anytime a BOCS
             user input event occurs
         """
@@ -51,19 +51,16 @@ class FortyTwoPuzzle(BOCSPuzzle):
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)
 
-        self.reset()
+        # Display puzzle prompt
+        self.eink.set_text(self.PROMPT)
 
+        # Show telegraph
         self.rotary_state = RotaryState()
         self.rotary_state.set_mode(RotaryState.TELEGRAPH)
         self.update_io_state(ARDUINO1, self.rotary_state)
+
+        # Save start time
         self.last_press_time = datetime.now()
-
-    def reset(self):
-        self.count1 = 0
-        self.count2 = 0
-        self.user_input = [[0 for x in range(self.w)] for y in range(self.h)]
-
-        self.eink.set_text(self.PROMPT)
 
     def user_input_event_received(self, event):
         """
@@ -75,36 +72,48 @@ class FortyTwoPuzzle(BOCSPuzzle):
         """
 
         if event.id == EventType.TELEGRAPH_BUTTON_PRESS:  # See if the event was a start button press
-            duration = event.data  # The amount of time the button was held down for (in ms)
-            time_open = ((datetime.now() - self.last_press_time).total_seconds())/1000-float(duration)
-            if time_open>self.scale*(3000+self.error):
-                user_input = [[0 for x in range(self.w)] for y in range(self.h)]
-                self.count1 = 0
-            self.user_input[self.count1][0]=duration
-            self.user_input[self.count1][1]=time_open
-            self.count1+=1
-            self.last_press_time = datetime.now()
 
-            if self.count1==9:
-                for x in range (0,9):
-                    for y in range (0,1):
-                        if self.model[x][y]-self.error <= self.user_input[x][y] <= self.model[x][y]+self.error:
-                            self.count2+=1
-                #input is complete sweep and compare two arrays
-                #increment count2 if input value within model value
+            # Get the amount of time the button was held down for (convert from ms to s)
+            time_closed = float(event.data) / 1000
+            # Calculate the amount of time the switch was open between presses
+            time_open = ((datetime.now() - self.last_press_time).total_seconds())-time_closed
 
-            if self.count2 >= 18: #arrays match within tolerances
-                self.eink.set_text(self.CORRECT_RESPONSE)
-                self.pause(5)
-                self.rotary_state.set_mode(RotaryState.CLOSED)
-                self.update_io_state(ARDUINO1, self.rotary_state)
-                self.is_solved = True  # Exits this puzzle
-            else:
+            if time_open > self.RESET_TIME:
+                self.current_correct_count = 0
+                # TODO Do this with an asynchronous timer
+            else:  # See if button was left open for the correct amount of time
+                if self.input_matches(time_open, self.CORRECT_SEQUENCE_OPEN[self.current_pos]):
+                    self.current_correct_count += 1
+
+            if self.current_correct_count > self.current_pos:  # Answer being built-up properly
+                self.current_correct_count += 1
+                self.current_pos += 1
+                if self.current_correct_count == self.SLOT_COUNT:  # Puzzle has been answered correctly
+                    self.eink.set_text(self.CORRECT_RESPONSE)
+                    self.rotary_state.set_mode(RotaryState.CLOSED)
+                    self.update_io_state(ARDUINO1, self.rotary_state)
+                    self.pause(5)
+                    self.is_solved = True  # Exits this puzzle
+
+            else:  # Answer has not been built up properly -- tell player they're wrong and restart
                 if self.attempt_count < len(self.RESPONSES):
                     text = self.RESPONSES[self.attempt_count]
                     self.attempt_count += 1
                 else:
                     text = "Wrong"
                 self.eink.set_text(text)
+                self.current_correct_count = 0
+                self.current_pos = 0
                 self.pause(5)
-                self.reset()
+                self.eink.set_text(self.PROMPT)
+
+            self.last_press_time = datetime.now()
+
+    def input_matches(self, reading, correct_value):
+        """
+        Determines whether or not a given input matches the correct timing. (Global THRESHOLD used.)
+        :param reading: the user's input value (in seconds)
+        :param correct_value: the correct value (in seconds)
+        :return: True if the input matches, False otherwise
+        """
+        return math.fabs(reading - correct_value) < self.THRESHOLD

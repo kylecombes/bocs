@@ -3,9 +3,14 @@ from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.available_io import *
 
 
-class PuzzleName(BOCSPuzzle):
+class MousePuzzle(BOCSPuzzle):
 
-    PUZZLE_ID = 'DEFINE ME!'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
+    PUZZLE_ID = ""
+    PROMPT = "I'm hungry for an animal to feed my appetite\n" \
+        "A creature that you students can make scurry left and right\n" \
+        "Although my understanding of your world is cursory,\n" \
+        "I’m certain they’re abundant here so please feed one to me."
+    # A unique ID (can be anything) to use when reporting puzzle stats to the server
 
     is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
 
@@ -22,8 +27,11 @@ class PuzzleName(BOCSPuzzle):
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)
 
+        self.reset_puzzle()
+
+    def reset_puzzle(self):
         # Let’s display the image bocs-start.png on the e-ink display
-        self.eink.set_image('bocs-start.png')
+        self.eink.set_text(self.PROMPT)
 
     def user_input_event_received(self, event):
         """
@@ -34,5 +42,12 @@ class PuzzleName(BOCSPuzzle):
         associated with the event, e.g. which key/number) and `options` (extra data, usually empty)
         """
 
-        if event.id == EventType.START_BUTTON_PRESS:  # See if the event was a start button press
-            self.is_solved = True  # Exits this puzzle
+        if event.id == EventType.DRAWER_STATE_CHANGE:
+            if event.data == '0':  # Drawer closed
+                # if event.extra:
+                #     self.eink.set_text("Sorry, that's incorrect.")
+                #     self.pause(5)
+                #     self.reset_puzzle()
+                # else:
+                self.eink.set_text('Correct!')
+                self.is_solved = True
