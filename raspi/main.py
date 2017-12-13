@@ -7,6 +7,7 @@ from raspi.puzzles.mouse_puzzle import MousePuzzle
 from raspi.puzzles.forty_two import FortyTwoPuzzle
 from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
 from raspi.puzzles.start import StartPrompt
+from raspi.puzzles.numriddle_puzzle import NumRiddlePuzzle
 from raspi.puzzles.nothing_puzzle import NothingPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle
@@ -24,9 +25,10 @@ class BOCSMain:
     future_arduino_states = {}  # State updates are queued here until the given Arduino is connected
 
     PUZZLE_SETS = [
-        [MousePuzzle],  # TODO Append Trellis game
-        [NothingPuzzle, FrequencyPuzzle],
-        [FortyTwoPuzzle]  # TODO Prepend 7-8-9
+        # [MousePuzzle],  # TODO Append Trellis game
+        # [NothingPuzzle, FrequencyPuzzle],
+        # [FortyTwoPuzzle]  # TODO Prepend 7-8-9
+        [NumRiddlePuzzle]
     ]
     START_PROMPT = StartPrompt
     VICTORY_PUZZLE = VictoryPuzzle
