@@ -40,7 +40,7 @@ class BOCSMain:
         # Connect to the sound-playing server, if desired
         self.sound_server = ServerComm(sound_server) if sound_server else None
 
-        self.puzzles = [BinaryTrellis, StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, FrequencyPuzzle, NothingPuzzle]
+        self.puzzles = [StartPrompt, BirthdayParadoxPuzzle, BunkerHillMonumentPuzzle, FrequencyPuzzle, NothingPuzzle]
 
         # Run the puzzles!
         self.state.phase = BOCSState.RUNNING
@@ -58,8 +58,8 @@ class BOCSMain:
                 # Deregister event callback
                 self.event_callback = None
 
-                if self.current_puzzle != self.puzzles[0]:
-                    time.sleep(5)  # Pause for 5 seconds to show message before proceeding to next puzzle
+                # if type(self.current_puzzle) != self.puzzles[0]:
+                #     time.sleep(2)  # Pause for 5 seconds to show message before proceeding to next puzzle
 
                 # Increment the index to the next puzzle
                 self.current_puzzle_index += 1
@@ -69,7 +69,7 @@ class BOCSMain:
                     self.current_puzzle = puzzle_class(self.puzzle_init_bundle, self.register_callback)
                 else:
                     self.state.phase = BOCSState.STOPPING
-            time.sleep(0.005)  # Sleep for 50ms
+            time.sleep(0.005)  # Sleep for 5ms
 
     def shutdown(self):
         # Stop event listener threads

@@ -67,3 +67,6 @@ class EInkController:
 
             if text:  # There is text to display
                 print('Displaying text: {}'.format(text))
+
+    def clear(self):
+        self.state = EInkState()

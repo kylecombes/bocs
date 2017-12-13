@@ -6,12 +6,12 @@
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
 // Handshake (pairing) and heartbeat
 bool handshakeCompleted = false;
-bool usingHandshake = true;
+bool usingHandshake = true; // Set to false during debug for to disable handshake
 unsigned long nextBroadcastTime = 0;
 #define BROADCAST_INTERVAL 1000
 // Go back into handshake mode after 3 seconds of no heartbeat from computer
 unsigned long expectedHeartbeatByTime = 0;
-#define HEARTBEAT_TIMEOUT 10000
+#define HEARTBEAT_TIMEOUT 20000
 
 
 // ----- Begin start button light config ----- //

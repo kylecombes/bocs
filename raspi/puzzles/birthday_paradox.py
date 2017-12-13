@@ -6,7 +6,7 @@ from raspi.available_io import *
 
 class BirthdayParadoxPuzzle(BOCSPuzzle):
 
-    PUZZLE_ID = 'bday-paradox'  # Used by stat server
+    PUZZLE_ID = 'Birthday Paradox'  # Used by stat server
 
     PROMPT = "How many people are needed in a room for the probability that 2 have the " \
             "same birthday to be greater than 50%?"
@@ -31,9 +31,9 @@ class BirthdayParadoxPuzzle(BOCSPuzzle):
             key = event.data
             if key == '#':  # Submit
                 if self.guess == self.ANSWER:
-                    self.eink.set_text('Correct!')
                     self.keypad_state.set_visible(False)
                     self.update_io_state(ARDUINO1, self.keypad_state)
+                    self.eink.set_text('Correct!')
                     self.is_solved = True
                     self.report_attempt(self.PUZZLE_ID)
                 else:

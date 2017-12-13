@@ -9,8 +9,8 @@ class StartButtonState(IOState):
     def __init__(self, repeat_pattern=False, old_state=None):
         IOState.__init__(self, old_state)
 
-        self._data['repeat'] = repeat_pattern
         self.clear_pattern()
+        self._data['repeat'] = repeat_pattern
 
     def set_repeating(self, repeats):
         self._data['repeat'] = repeats
@@ -34,7 +34,7 @@ class StartButtonState(IOState):
         :param time: how long the frame should last
         :return: True if added successfully, False if blink frame limit exceeded
         """
-        if len(self._data[self.OUTPUT_ID]) >= self.MAX_FRAMES:
+        if len(self._data['pattern']) >= self.MAX_FRAMES:
             return False  # Cannot have more than MAX_FRAMES
 
         self._data['pattern'] += '{}{}'.format('T' if is_on else 'F', time)

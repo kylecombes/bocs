@@ -17,15 +17,20 @@ const int Key7 = 8;
 const int INNER_LIMIT = 9;
 const int OUTER_LIMIT = 10;
 const int SERVO_PIN = 11;
+#define STOP 90
+#define IN 70
+#define OUT 120
+#define EXTEND_TIME 1000
+#define RETRACT_TIME 1150
 
 Servo myservo;
 
 int button_pressed = 0;               // Current button state
 int last_button_pressed = 0;          // Most recent button state
-int curr_state = 0;                   // Current extended/retracted state of piano (1 for out, 0 for in)
+bool is_open = 0;                     // Current extended/retracted state of piano
 bool handshake_completed = false;     // Set to true when registration with computer completed
 unsigned long next_broadcast_time = 0;  // Used for doing handshake
-#define BROADCAST_INTERVAL 500        // Also used for doing handshake
+#define BROADCAST_INTERVAL 2000       // Also used for doing handshake
 // Go back into handshake mode after 3 seconds of no heartbeat from computer
 unsigned long expectedHeartbeatByTime = 0;
 #define HEARTBEAT_TIMEOUT 10000
@@ -53,9 +58,9 @@ void loop() {
   if (handshake_completed) {
 
     // Extends or retracts piano based on incoming msgs
-    curr_state = checkState(curr_state);
+    checkSerial();
   
-    if (curr_state) {
+    if (is_open) {
       last_button_pressed = checkKeys(last_button_pressed);
     }
 
@@ -71,15 +76,11 @@ void loop() {
       // Haven't heard heartbeat from computer in too long
       handshake_completed = false; // Go back into pairing mode
     }
-
-    if (Serial.available() > 0 && Serial.readString() == "ba-dump") {
-      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
-      Serial.flush();
-    }
+    
   } else { // Try to register with the computer
     if (Serial.available() > 0) { // The computer is responding
       String msg = Serial.readString();
-      handshake_completed = msg.equals("Hello from computer");
+      handshake_completed = msg.equals("Hello from computer\n");
       Serial.println(handshake_completed ? "Connected" : "Not connected");
       expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     } else if (millis() > next_broadcast_time) { // Cry out for a computer
@@ -93,48 +94,42 @@ void loop() {
 // Functions ----------F----------F----------F----------F----------F
 
 // Function to update piano state (extended/retracted) based on incoming msg; assumes serial port opened
-int checkState(int state) {
+void checkSerial() {
   
-  if (Serial.available()) {
-    int msg = Serial.read() - 48;
+//  String msg = "";
+//  while (Serial.available() > 0) {
+//    char nextChar = Serial.read();
+//    if (nextChar == '\n') break;
+//    msg += (String)nextChar;
+//    Serial.print(nextChar);
+//  }
+
+  if (Serial.available() > 0) {
+    String msg = Serial.readString();
+    if (msg == "ba-dump\n") {
+      expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
+    }
 
     // If received retract msg
-    if (msg == 0) {
-      state = 0;
-      Serial.println("Write1");
-      myservo.write(180);
-      
-      // Waits until cart is fully retracted
-      while (true) {
-        //if (digitalRead(INNER_LIMIT)) {
-        // Can do while (digitalRead(INNER_LIMIT) < INNER_LIMIT) {}
-        if (true) {
-          delay(500);
-          Serial.println("Write2");
-          myservo.write(90);
-          break;
-        }
-      }
+    else if (msg[0] == '0') {
+//      Serial.println("Closing");
+      myservo.write(IN);
+      delay(RETRACT_TIME);
+      myservo.write(STOP);
+      is_open = false;
     }
 
     // If received extend msg
-    else if (msg == 1) {
-      state = 1;
-      myservo.write(0);
-      
-      // Waits until cart is fully extended
-      while (true) {
-        //if (digitalRead(OUTER_LIMIT)) {
-        if (true) {
-          delay(500);
-          myservo.write(90);
-          break;
-        }
-      }
+    else if (msg[0] == '1') {
+//      Serial.println("Opening");
+      myservo.write(OUT);
+      delay(EXTEND_TIME);
+      myservo.write(STOP);
+      is_open = true;
+    } else {
+      delay(30);
     }
   }
-
-  return state;
 }
 
 // Function to send msg given pressed keys
@@ -178,7 +173,6 @@ int checkKeys(int last_button_pressed) {
 
   // Send message if button_pressed has changed
   if (button_pressed != last_button_pressed) {
-    //String output = String(button_pressed);
     Serial.println("{\"event_id\":\"2\",\"data\":\"" + String(button_pressed) + "\"}");
   }
 

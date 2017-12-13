@@ -60,7 +60,7 @@ class ArduinoCommThread(Thread):
     HEARTBEAT_TIMEOUT = timedelta(seconds=10)
     expected_heartbeat_by = datetime.now()
     next_heartbeat_time = datetime.now()
-    HEARTBEAT_INTERVAL = timedelta(seconds=2)
+    HEARTBEAT_INTERVAL = timedelta(seconds=10)
 
     def __init__(self, cxn, arduino_comm, event_callback, register_callback, deregister_callback,
                  connection_timeout=60000, debug=False):
