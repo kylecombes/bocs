@@ -105,8 +105,9 @@ class BOCSMain:
                     self.current_puzzle_index += 1
 
                 elif self.current_puzzle_index > len(self.puzzles):  # Victory puzzle finished
-                    if not self.load_next_puzzle_set():  # No more puzzle sets to play
-                        self.state.phase = BOCSState.STOPPING
+                    if not self.load_next_puzzle_set():  # No more puzzle sets to play, so restart
+                        self.current_puzzle_index = -1
+                        self.current_puzzle = self.START_PROMPT
 
             time.sleep(0.005)  # Sleep for 5ms
 

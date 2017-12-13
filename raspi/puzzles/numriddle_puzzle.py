@@ -1,17 +1,16 @@
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
+from raspi.io_states.keypad_state import KeypadState
 from raspi.available_io import *
 
 
 class NumRiddlePuzzle(BOCSPuzzle):
 
-    PUZZLE_ID = '789 PUZZLE'  # Used by stat server
+    PUZZLE_ID = 'jul jnf fvk'  # Used by stat server
 
-    PROMPT = "jul jnf fvk nsenvq bs frira?"
-    LINE_2_PREFIX = "Input: "
+    PROMPT = "jul jnf fvk nsenvq bs frira?\n\nInput: "
     guess = ""
     ANSWER = "789"
-    is_solved = False
 
     def __init__(self, init_bundle, register_callback):
         """
@@ -26,7 +25,12 @@ class NumRiddlePuzzle(BOCSPuzzle):
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)
 
-        self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+        # Display the keypad
+        self.keypad_state = KeypadState(visible=True)
+        self.update_io_state(ARDUINO1, self.keypad_state)
+
+        # Display the prompt
+        self.eink.set_text(self.PROMPT)
 
     def user_input_event_received(self, event):
         """
@@ -42,12 +46,15 @@ class NumRiddlePuzzle(BOCSPuzzle):
             if key == '#':
                 if self.guess == self.ANSWER:
                     self.eink.set_text('Correct!')
-                    self.is_solved = True
                     self.report_attempt(self.PUZZLE_ID)
+                    self.keypad_state.set_visible(False)
+                    self.update_io_state(ARDUINO1, self.keypad_state)
+                    self.is_solved = True
                 else:
+                    self.report_attempt(self.PUZZLE_ID, self.guess)
                     self.eink.set_text("Sorry, that's incorrect!")
                     self.pause(5)
-                    self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+                    self.eink.set_text(self.PROMPT)
 
             else:
                 if key == '*':  # Backspace
@@ -55,6 +62,4 @@ class NumRiddlePuzzle(BOCSPuzzle):
                 else:  # Digit entry
                     self.guess += str(key)
 
-                line2 = self.LINE_2_PREFIX + self.guess
-
-                self.eink.set_text('{}\n\n{}{}'.format(self.PROMPT, self.LINE_2_PREFIX, self.guess))
+                self.eink.set_text(self.PROMPT + self.guess)
