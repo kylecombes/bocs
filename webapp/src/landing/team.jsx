@@ -14,6 +14,7 @@ export default class Team extends Component {
                 website={member.website}
                 title={member.title}
                 image={member.image}
+                longDescription={member.longDescription}
             />)
         });
         return (

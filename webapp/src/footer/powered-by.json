@@ -19,6 +19,11 @@
       "name": "React",
       "website": "https://reactjs.org/",
       "logo": "assets/react-logo.svg"
+    },
+    {
+      "name": "Caffeine",
+      "website": "https://en.wikipedia.org/wiki/Caffeine",
+      "logo": ""
     }
   ]
 }

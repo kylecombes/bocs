@@ -65,6 +65,51 @@
     text-align: center;
 }
 
+.feature {
+    padding: 1.5em;
+}
+
+
+.feature-title {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.personality {
+    height: 110vh;
+    background-color: #000024;
+    color: #cccccc;
+}
+
+.personality .landing-page-section-content {
+    display: flex;
+    height: 100%;
+}
+
+.personality-example {
+    margin: 0 0 0 auto;
+}
+
+.personality-content {
+    font-size: 1.4em;
+    padding-left: 1em;
+    line-height: 1.8em;
+}
+
+.personality-title {
+    margin-bottom: 0.6rem;
+    font-weight: bold;
+}
+
+.personality-subtitle {
+    margin-bottom: 4rem;
+}
+
+.leaderboard {
+    background-color: #056c8c;
+    color: white;
+}
+
 .team {
     color: white;
     background-color: #016d8e;
@@ -104,6 +149,10 @@ a:hover .team-member-name {
     padding-left: 0;
     padding-right: 0;
     padding-bottom: 0;
+}
+
+.origin-poe {
+    padding-left: 4em;
 }
 
 .sprint {

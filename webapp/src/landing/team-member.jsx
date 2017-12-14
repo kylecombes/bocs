@@ -13,6 +13,7 @@ export default class TeamMember extends Component {
                 <img className="team-member-image" alt={this.props.name} src={this.props.image}/>
                 {nameElem}
                 <p className="team-member-title">{this.props.title}</p>
+                <p className="team-member-description">{this.props.longDescription}</p>
             </div>
         )
     }

@@ -3,33 +3,39 @@
     {
       "name": "Diego Alvarez",
       "title": "Mechanical Design & Systems Integration",
-      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/18194806_275031302900421_6192671014163458858_n.jpg?oh=f5de476090655208a0276de59d5eebf6&oe=5AD45E39"
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/18194806_275031302900421_6192671014163458858_n.jpg?oh=f5de476090655208a0276de59d5eebf6&oe=5AD45E39",
+      "longDescription": "Diego Alvarez is a sophomore at Olin College of Engineering majoring in Applied Tool Use. He enjoys making trombone noises, setting things on fire, and long walks through Solidworks help forums. Despite his core belief in everything being a hammer if wielded properly, Diego managed to be responsible for a significant number of BOCS’s mechanical inputs, including (but not limited to) the Cube and the Number Pad. He can make a press-fit tighter than a square peg in a round hole, and a sliding joint smoother than the skin on a baby’s bottom. When not furiously “mechying”, as the kids are calling it these days, Diego can be found regally staring out his bay window at the mundane and unimportant passings of the world far below."
     },
     {
       "name": "Kyle Combes",
       "website": "http://kylecombes.com",
       "title": "Software Architecture & Systems Integration",
-      "image": "https://media.licdn.com/mpr/mpr/shrinknp_200_200/AAEAAQAAAAAAAAbWAAAAJDlkODlkMThhLTE5NDQtNDcwNS04ZjZhLTQxY2FhNzMzN2Q4YQ.jpg"
+      "image": "https://media.licdn.com/mpr/mpr/shrinknp_200_200/AAEAAQAAAAAAAAbWAAAAJDlkODlkMThhLTE5NDQtNDcwNS04ZjZhLTQxY2FhNzMzN2Q4YQ.jpg",
+      "longDescription": "Kyle Combes is a sophomore majoring in Engineering with Computing. He hails from Hawaii and enjoys programming, mass-buying RasPi Zeros, and presumably other things too. Kyle, being our resident software god, worked on all of the parts of the box that required typing things. Since most of the team consisted of hapless mechE’s, this role was very important. He was voted most likely tell us that our code “looks fine” when it, in fact, does not."
     },
     {
       "name": "Evan Cusato",
       "title": "Mechanical Design & Systems Integration",
-      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/10320286_245836915607826_2738275783065956018_n.jpg?oh=b657968832bdf59e57c69cc66e086a06&oe=5AA62803"
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/10320286_245836915607826_2738275783065956018_n.jpg?oh=b657968832bdf59e57c69cc66e086a06&oe=5AA62803",
+      "longDescription": "Evan R. Cusato was hails from the small seaside village of Elongated Coastline, CA. He is a world-renowned director, a semiprofessional student pilot, a meticulous machinist, a refined cheese connoisseur, and an imaginer/designer/producer of Things That Are Generally Cool. Ever since he was young, he has gazed up at the sky in reverence each time an airplane passes overhead, hoping to himself that one day he may take to the skies. For now, though, he is stuck on the ground at Olin College of Engineering studying how to do the mathy and sciency parts of making Things That Are Generally Cool, like this BOCS. In his spare time, he watches Star Trek, sleeps, eats, and wishes that he generally had more free time."
     },
     {
       "name": "Zack Davenport",
-      "title": "Mechanical Design & UX Design",
-      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-0/p160x160/21764845_1471713496258928_7107109868848793549_n.jpg?oh=52bf502160af42f48b13fd7e621f9a1a&oe=5A97EF62"
+      "title": "Mechanical & UX Design",
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-0/p160x160/21764845_1471713496258928_7107109868848793549_n.jpg?oh=52bf502160af42f48b13fd7e621f9a1a&oe=5A97EF62",
+      "longDescription": "Zachary Davenport is the foremost expert on candy dispensers at Olin College of Engineering. Having designed both a PEZ dispenser with interchangeable busts for the one and only Rob Martello and a Smarties dispenser for the BOCS, his skills are sought after near and far by companies looking to delight their customers. This aligns with Zack’s larger goals of engineering physical things which assist humans in being happier humans. He humbly hails from the land between the East and West Coasts which, despite many referring to such words “fake news,” does in fact exist."
     },
     {
       "name": "Connor Novak",
       "title": "Mechanical Design & Systems Integration",
-      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/12742832_160284417687041_3079456826090206080_n.jpg?oh=dc9afe0619123013b68a40bd2f925670&oe=5A94992E"
+      "image": "https://scontent-lga3-1.xx.fbcdn.net/v/t1.0-1/p160x160/12742832_160284417687041_3079456826090206080_n.jpg?oh=dc9afe0619123013b68a40bd2f925670&oe=5A94992E",
+      "longDescription": "Resident magician, possibly a robot himself, Connor Novak was installed at Olin College last year on loan from his permanent operating facility in Reno Nevada. Connor spends many a late night working to further the development of his robot brethren. He has nearly violated the law of his fire-spinning tribe many times in his pursuit of robotic perfection. When he can finally be convinced to put down the soldering iron—occasionally under the threat of an extremely convincing 2x4—he can often be found with his fire spinning tribe engaging in dazzling, death-defying feats or (with more difficulty) isolated in the wilderness attempting to survive for extended periods of time with nothing but stone knives and bearskin."
     },
     {
       "name": "Carl",
       "title": "Moral Support",
-      "image": "http://gadgetsin.com/uploads/2011/05/google_android_squishables_1.jpg?x78359"
+      "image": "http://gadgetsin.com/uploads/2011/05/google_android_squishables_1.jpg?x78359",
+      "longDescription": ""
     }
   ]
 }

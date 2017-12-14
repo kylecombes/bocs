@@ -32,9 +32,9 @@ export default class Leaderboard extends Component {
         }
 
         return (
-            <div className="landing-page-section cell leaderboard-container">
+            <div className="landing-page-section cell leaderboard">
                 <div className="landing-page-section-content cell">
-                    <h1 className="landing-section-title light">Leaderboard</h1>
+                    <h1 className="landing-section-title">Leaderboard</h1>
                     {stats}
                 </div>
             </div>
