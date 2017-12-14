@@ -9,10 +9,10 @@ export default class LandingPageHeader extends Component {
             <section className="landing-page-header cell">
                 <div className="landing-page-section-content cell grid-x">
                     <div className="medium-6 cell">
-                        <img alt="BOCS logo" src="./assets/landing-header.svg"/>
+                        <img className="bocs-logo" alt="BOCS logo" src="http://poe.olin.edu/2017/Poezzle/assets/landing-header.svg"/>
                     </div>
                     <div className="medium-6 cell">
-                        [Insert legit image of BOCS here]
+                        <img alt="BOCS image" src="http://poe.olin.edu/2017/Poezzle/assets/BOCS-top.jpg"/>
                     </div>
                 </div>
             </section>

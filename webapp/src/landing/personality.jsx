@@ -9,7 +9,7 @@ export default class Personality extends Component {
                     <h1 className="landing-section-title">Personifiable</h1>
                     <div className="personality-content-container cell grid-x">
                         <div className="personality-img-container cell large-5">
-                            [BOCS w/sheet metal image here]
+                            <img src="http://poe.olin.edu/2017/Poezzle/assets/BOCS-AI.jpg"/>
                         </div>
                         <div className="personality-content cell large-7">
                             <h1 className="personality-title">Meet BOCS</h1>

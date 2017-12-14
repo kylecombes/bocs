@@ -20,14 +20,13 @@ export default class LandingPageFeatures extends Component {
             feats.push(<Feature key={feature.title} title={feature.title} icon={feature.icon} description={feature.description} />);
         }
 
-
         return (
             <section className="landing-page-section cell features">
                 <div className="landing-page-section-content cell grid-x">
                     <h1 className="landing-section-title features-title">Features</h1>
-                    <p className="cell feature-list grid-x">
+                    <div className="cell feature-list grid-x">
                         {feats}
-                    </p>
+                    </div>
                 </div>
             </section>
         )

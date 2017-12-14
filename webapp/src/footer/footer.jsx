@@ -7,7 +7,7 @@ export default class Footer extends Component {
         const poweredBy = [];
         poweredByTech.technologies.forEach((t) => {
             poweredBy.push(
-                <div className="cell large-auto medium-6">
+                <div className="cell large-auto medium-6" key={t.name}>
                     <a alt={t.name} href={t.website} target="_blank">
                         <img src={t.logo} alt={t.name}/>
                     </a>

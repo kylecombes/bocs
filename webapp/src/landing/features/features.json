@@ -2,22 +2,22 @@
   "data": [
     {
       "title": "I/O Galore",
-      "icon": "",
+      "icon": "http://poe.olin.edu/2017/Poezzle/assets/io.svg",
       "description": "With 5 retractable I/O devices, plus a \"start\" button, there's plenty of room for creative puzzle expression."
     },
     {
       "title": "Extensible",
-      "icon": "",
+      "icon": "http://poe.olin.edu/2017/Poezzle/assets/extensible.svg",
       "description": "The documented API makes writing your own puzzles a breeze."
     },
     {
       "title": "Modular",
-      "icon": "",
+      "icon": "http://poe.olin.edu/2017/Poezzle/assets/modular.svg",
       "description": "Each I/O device communicates over a standard protocol, so you can swap them out and even add your own."
     },
     {
       "title": "Open Source",
-      "icon": "",
+      "icon": "http://poe.olin.edu/2017/Poezzle/assets/opensource.svg",
       "description": "It wouldn't be truly extensible if it weren't 100% open-source."
     }
   ]
