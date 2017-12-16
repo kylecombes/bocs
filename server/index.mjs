@@ -32,6 +32,19 @@ const dbName = process.env.BOCS_MONGO_DB_NAME;
 const replicaSet = process.env.BOCS_MONGO_REPLICA_SET;
 const authSource = process.env.BOCS_MONGO_AUTH_SOURCE || 'admin';
 
+function getLatestCompletionStats(db, count) {
+    let completions = [];
+    const queryRes = db.collection('attempts').find({ 'guess': { '$exists': false } }).limit(count);
+    queryRes.forEach((completion) => {
+        completions.push({
+            puzzle_id: completion.puzzle_id,
+            time: completion.elapsed_time,
+            datettime: completion.datettime,
+        })
+    });
+    return { 'leaderboardStats': completions };
+}
+
 if (!(username && password && cluster1 && cluster2 && cluster3 && dbName && replicaSet)) {
     // Couldn't find environment variables
     console.error('Please check your environment variables to make sure the following are defined:');
@@ -52,10 +65,29 @@ if (!(username && password && cluster1 && cluster2 && cluster3 && dbName && repl
     MongoClient.connect(mongoUri, (err, db) => {
         if (!err) {
             console.log('Successfully connected to MongoDB instance.');
+
+            // Get the 20 latest leaderboard stats
+            let stats = getLatestCompletionStats(db, 20);
+
             // Start the WebSocket server
             const server = new WebSocket.Server({server: httpServer});
+            // Define a function for sending some data to all connected clients
+            server.broadcast = (data) => {
+                data = JSON.stringify(data);
+                server.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(data);
+                    }
+                })
+            };
             server.on('connection', (ws) => {
                 console.log('Client connected');
+                console.log(stats);
+
+                // Send latest leaderboard stats
+                ws.send(JSON.stringify(stats));
+
+                // Register message event listener
                 ws.on('message', (message) => {
                     console.log(message);
                     try {
@@ -69,6 +101,8 @@ if (!(username && password && cluster1 && cluster2 && cluster3 && dbName && repl
                                 .then((response) => {
                                     if (response.result.ok === 1) {
                                         console.log(`Successfully saved attempt to db (ObjectID: ${response.insertedId})`);
+                                        stats = getLatestCompletionStats(db, 20);
+                                        server.broadcast(stats);
                                     } else {
                                         console.error(`Error saving attempt to db:\n${response}`)
                                     }

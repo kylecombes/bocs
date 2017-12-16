@@ -40,7 +40,7 @@ class ServerComm:
 class ServerCommThread(Thread):
 
     def __init__(self, uri, message_received_callback, debug=False):
-        Thread.__init__(self, name='BOCS stat server websocket connection')
+        Thread.__init__(self, name='BOCS WebSocket connection')
 
         websocket.enableTrace(debug)
 
@@ -62,7 +62,7 @@ class ServerCommThread(Thread):
 
     def on_error(self, ws, error):
         self.state = ServerComm.CLOSED
-        print('Server error:', error.strerror)
+        print('Server error: ' + error.strerror)
 
     def on_close(self, message):
         self.state = ServerComm.CLOSED

@@ -1,0 +1,341 @@
+/** ---------- Begin General/Overarching Styles ---------- **/
+
+* {
+    transition: all 0.3s;
+}
+
+h1, h2, h3, h4 {
+    display: block;
+    width: 100%;
+}
+
+.expand {
+    max-width: none !important;
+}
+
+.header,
+.footer-content,
+.landing-page-section-content {
+    max-width: 1500px;
+    margin:0 auto;
+    padding: 6em 3em;
+}
+
+.header {
+    padding: 2em 3em 2em;
+    display: flex;
+    align-items: center;
+}
+
+.header .nav-container {
+    flex-grow: 1;
+}
+
+.header nav {
+    float: right;
+}
+
+.header span {
+    padding: 1em 1.5em;
+    cursor: pointer;
+    border-bottom: 2px solid white;
+    user-select: none;
+}
+
+.header span:hover {
+    border-bottom: 2px solid black;
+}
+
+.bocs-logo {
+    width: 100%;
+}
+
+/** ---------- End General/Overarching Styles ---------- **/
+
+/** ---------- Begin Landing Page Styles ---------- **/
+
+.page {
+    max-width: 1500px;
+    margin: 3em auto;
+    padding: 2em;
+    overflow: auto;
+}
+
+.image-caption {
+    margin-top: 0.5em;
+}
+
+.landing-page-header {
+    margin-top: 10em;
+}
+
+.landing-section-title {
+    display: block;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.landing-section-title:after {
+    margin: 0 auto;
+    content: ' ';
+    display: block;
+    width: 1.5em;
+    border: 1px solid #fff;
+}
+
+.landing-section-title.light:after {
+    border-color: #000;
+}
+
+.landing-page-header {
+    margin: 6em 0;
+}
+
+.stat-pane {
+    display: flex;
+    padding: 1vw 1vw;
+    font-size: 1.4em;
+}
+
+.stat-pane:not(:last-child) {
+    border-bottom: 1px solid gray;
+}
+
+.stat-pane > * {
+    width: 50%;
+}
+
+.features {
+    color: white;
+    background-color: #259fc4;
+}
+
+.demo-video {
+    background-color: #016d8e;
+    color: white;
+}
+
+.feature img {
+    height: 12em;
+    padding: 1em;
+}
+
+.feature-list {
+    text-align: center;
+}
+
+.feature {
+    padding: 1.5em;
+}
+
+
+.feature-title {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.personality {
+    min-height: 110vh;
+    background-color: #000;
+    color: #cccccc;
+}
+
+.personality .landing-page-section-content {
+    display: flex;
+    height: 100%;
+}
+
+.personality-example {
+    margin: 0 0 0 auto;
+}
+
+.personality-content {
+    font-size: 1.2em;
+    padding-left: 4em;
+    line-height: 1.8em;
+}
+
+.personality-title {
+    margin-bottom: 0.6rem;
+    font-weight: bold;
+}
+
+.personality-subtitle {
+    margin-bottom: 4rem;
+}
+
+.leaderboard {
+    background-color: #056c8c;
+    color: white;
+}
+
+.mechanical .sketchfab-container {
+    padding: 2em;
+}
+
+.mechanical .sketchfab-container iframe {
+    width: 100%;
+    height: 50vh;
+    min-height: 20em;
+    border: none;
+}
+
+.team {
+    color: white;
+    background-color: #016d8e;
+}
+
+.team-member {
+    text-align: center;
+    padding: 1.5em;
+}
+
+.team-member-name {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 0.7em;
+}
+
+a .team-member-name {
+    color: white;
+}
+
+a:hover .team-member-name {
+    color: #14c8ff;
+}
+
+.team-member-title {
+    margin: 0 auto 1em;
+    font-size: 1.3em;
+}
+
+.team-member-image {
+    display: block;
+    margin: 2em auto;
+    max-width: 10em;
+    clip-path: circle(5em at center);
+}
+
+.development .landing-page-section-content {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+.origin-poe {
+    padding-left: 4em;
+}
+
+.budget {
+    width: 80%;
+    margin: 4em auto;
+}
+
+.budget-item:nth-child(odd) {
+    background-color: #eee;
+}
+
+.budget-item span {
+    padding: 0.5em 0.5em;
+}
+
+.budget-item span:not(.name) {
+    text-align: right;
+}
+
+.budget-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.budget > div > * {
+    width: 16.6%;
+    display: inline-block;
+}
+
+.budget > div:last-child {
+    font-weight: bold;
+}
+
+.code-json {
+    font-family: "Courier New", Arial;
+    padding: 1em 2em;
+    background-color: #eee;
+    display: inline-block;
+    margin: 1em 0;
+}
+
+.align-right {
+    float: right;
+    margin-left: 3em;
+}
+
+.align-center {
+    margin: 0 auto;
+    width: 100%;
+    display: block;
+    text-align: center;
+}
+
+.sprint {
+    display: flex;
+    flex-direction: row;
+}
+
+.sprint > div {
+    flex: 1 0 auto;
+}
+
+.sprint div.sprint-title-container {
+    flex-grow: 0;
+    text-transform: uppercase;
+}
+
+.sprint-title {
+    transform: rotate(-90deg);
+    text-align: center;
+}
+
+.sprint-col {
+    padding: 1.5em;
+    min-height: 10em; /* Temporary */
+}
+
+.sprint-col:not(:last-child) {
+    border-right: 1px solid gray;
+}
+
+/** ---------- End Landing Page Styles ---------- **/
+
+/** ---------- Begin Footer Styles ---------- **/
+
+footer {
+    background-color: #02212b;
+    color: #056c8c;
+    text-align: center;
+}
+
+footer .powered-by {
+    margin-bottom: 1.5em;
+    font-family: 'Helvetica', sans-serif;
+    font-weight: bold;
+    font-size: 2em;
+    text-transform: uppercase;
+}
+
+.footer-content .technologies {
+    text-align: center;
+}
+
+.footer-content .technologies img {
+    max-height: 4em;
+
+}
+
+.footer-content .technologies img:not(:last-child) {
+    margin-bottom: 2em;
+}
+
+/** ---------- End Footer Styles ---------- **/

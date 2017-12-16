@@ -1,0 +1,256 @@
+{
+  "data": [
+    {
+      "name": "Raspberry Pi Zero W",
+      "source": "Micro Center",
+      "unitCost": 5,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "http://www.microcenter.com/product/486575/zero_w",
+      "fromBudget": true
+    },
+    {
+      "name": "Digital to analog converter hat for Raspberry Pi",
+      "source": "Micro Center",
+      "unitCost": 15,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "http://www.microcenter.com/product/486550/phat_dac",
+      "fromBudget": true
+    },
+    {
+      "name": "USB 2.0 OTG hub",
+      "source": "eBay",
+      "unitCost": 5,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "www.ebay.com/itm/Fosmon-3-Port-OTG-USB-2-0-Powered-Adapter-Hub-Memory-Stick-Micro-SD-Card-Reader-/292137378541",
+      "fromBudget": true
+    },
+    {
+      "name": "PaPiRus Raspberry Pi e-ink display hat",
+      "source": "eBay",
+      "unitCost": 29.99,
+      "quantity": 1,
+      "shippingCost": 7.65,
+      "url": "https://www.ebay.com/itm/NEW-Pi-Supply-PaPiRus-ePaper-eInk-Screen-Kit-Raspberry-Pi-1-44in-2in-2-7in/391896013972?ssPageName=STRK%3AMEBIDX%3AIT&_trksid=p2057872.m2749.l2649",
+      "fromBudget": true
+    },
+    {
+      "name": "Numeric keypad",
+      "source": "Adafruit",
+      "unitCost": 3.95,
+      "quantity": 1,
+      "shippingCost": 7.17,
+      "url": "https://www.adafruit.com/product/419",
+      "fromBudget": true
+    },
+    {
+      "name": "Trellis 4x4 LED button grid board",
+      "source": "Adafruit",
+      "unitCost": 9.95,
+      "quantity": 1,
+      "shippingCost": 7.17,
+      "url": "https://www.adafruit.com/product/1616",
+      "fromBudget": true
+    },
+    {
+      "name": "3.5mm male to male stereo audio cable",
+      "source": "Amazon",
+      "unitCost": 5,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.amazon.com/UGREEN-Auxiliary-Samsung-Smartphones-Speakers/dp/B00LM0U8I6/ref=sr_1_8",
+      "fromBudget": true
+    },
+    {
+      "name": "D-shaft",
+      "source": "McMaster Carr",
+      "unitCost": 15.19,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.mcmaster.com/#8632t141/=1a2efx1",
+      "fromBudget": true
+    },
+    {
+      "name": "Continuous servos",
+      "source": "Adafruit",
+      "unitCost": 11.95,
+      "quantity": 5,
+      "shippingCost": 0,
+      "url": "https://www.adafruit.com/product/154",
+      "fromBudget": true
+    },
+    {
+      "name": "Micro servos",
+      "source": "Adafruit",
+      "unitCost": 11.95,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "https://www.adafruit.com/product/2307",
+      "fromBudget": true
+    },
+    {
+      "name": "Plywood",
+      "source": "Home Depot",
+      "unitCost": 31.98,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.homedepot.com/p/Sande-Plywood-Common-3-4-in-x-4-ft-x-8-ft-Actual-0-709-in-x-48-in-x-96-in-454559/100037820",
+      "fromBudget": true
+    },
+    {
+      "name": "I2S digital to analog converter and amp",
+      "source": "Olin College",
+      "unitCost": 5.95,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.adafruit.com/product/3006",
+      "fromBudget": true
+    },
+    {
+      "name": "Medium-density fiberboard",
+      "source": "Personal",
+      "unitCost": 7.42,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.homedepot.com/p/Medium-Density-Fiberboard-Common-1-4-in-x-2-ft-x-4-ft-Actual-0-216-in-x-23-75-in-x-47-75-in-1508104/202089069",
+      "fromBudget": false
+    },
+    {
+      "name": "Wood screws (large)",
+      "source": "Olin College",
+      "unitCost": 0.04,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.mcmaster.com/#91070a150/=1an7ufr",
+      "fromBudget": false
+    },
+    {
+      "name": "Wood screws (small)",
+      "source": "Olin",
+      "unitCost": 0.05,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "",
+      "fromBudget": false
+    },
+    {
+      "name": "Speakers",
+      "source": "Personal",
+      "unitCost": 14.99,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://freeshipdeals.com/products/led-dancing-water-speakers",
+      "fromBudget": false
+    },
+    {
+      "name": "Arduino Uno",
+      "source": "Personal",
+      "unitCost": 22,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "https://store.arduino.cc/usa/arduino-uno-rev3",
+      "fromBudget": false
+    },
+    {
+      "name": "Arduino Nano",
+      "source": "Personal",
+      "unitCost": 22,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "https://store.arduino.cc/usa/arduino-nano",
+      "fromBudget": false
+    },
+    {
+      "name": "Ultrasonic sensor",
+      "source": "Personal",
+      "unitCost": 1.01,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://hobbyking.com/en_us/ultrasonic-distance-sensor-module-hc-sr04-for-kingduino-1.html",
+      "fromBudget": false
+    },
+    {
+      "name": "Limit switches",
+      "source": "Personal",
+      "unitCost": 0.75,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "https://www.google.com/shopping/product/13911990723399084755",
+      "fromBudget": false
+    },
+    {
+      "name": "Lead-acid battery",
+      "source": "Olin College",
+      "unitCost": 18.99,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.walmart.com/ip/Universal-UB1280-12V-8AH-Sealed-Lead-Acid-Battery-F1-187-TT/169551021",
+      "fromBudget": false
+    },
+    {
+      "name": "Start button",
+      "source": "Olin College",
+      "unitCost": 4.95,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.adafruit.com/product/916",
+      "fromBudget": false
+    },
+    {
+      "name": "Wooden dowels",
+      "source": "Olin College",
+      "unitCost": 0.05,
+      "quantity": 6,
+      "shippingCost": 0,
+      "url": "https://www.woodcraft.com/products/milescraft-50-count-1-4-inch-fluted-dowel-pins",
+      "fromBudget": false
+    },
+    {
+      "name": "Acrylic sheets",
+      "source": "Olin College",
+      "unitCost": 21.98,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.amazon.com/dp/B01N0NL2SY/ref=asc_df_B01N0NL2SY5299883/",
+      "fromBudget": false
+    },
+    {
+      "name": "Smarties (pack)",
+      "source": "Personal",
+      "unitCost": 8.54,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.amazon.com/XTREME-Sour-Smarties-16-Oz/dp/B004DSODMQ",
+      "fromBudget": false
+    },
+    {
+      "name": "Standard servos",
+      "source": "Olin College",
+      "unitCost": 12,
+      "quantity": 2,
+      "shippingCost": 0,
+      "url": "https://www.adafruit.com/product/155",
+      "fromBudget": false
+    },
+    {
+      "name": "Drawer slides",
+      "source": "Personal",
+      "unitCost": 8.99,
+      "quantity": 1,
+      "shippingCost": 0,
+      "url": "https://www.amazon.com/gp/product/B01M67X9P7/ref=oh_aui_detailpage_o00_s00",
+      "fromBudget": false
+    },
+    {
+      "name": "Push buttons",
+      "source": "Olin College",
+      "unitCost": 7,
+      "quantity": 0.35,
+      "shippingCost": 0,
+      "url": "https://www.sparkfun.com/products/97",
+      "fromBudget": false
+    }
+  ]
+}

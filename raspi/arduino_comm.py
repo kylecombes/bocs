@@ -20,19 +20,20 @@ class ArduinoComm:
     :param port (string) the serial port to connect to (defaults to /dev/ttyACM0)
     :param baudrate (int) the baudrate to use (defaults to 9600)
     """
-    def __init__(self, event_callback, register_callback, deregister_callback, port, baudrate=9600):
+    def __init__(self, event_callback, register_callback, deregister_callback, port, baudrate=9600, debug=False):
         self.event_callback = event_callback
         self.register_callback = register_callback
         self.deregister_callback = deregister_callback
         self.port = port
         self.baudrate = baudrate
         self.cxn = Serial(self.port, baudrate=self.baudrate)
+        self.debug = debug
 
         self.start_listening()
 
     def start_listening(self):
         self.thread = ArduinoCommThread(self.cxn, self, self.event_callback, self.register_callback,
-                                        self.deregister_callback)
+                                        self.deregister_callback, debug=self.debug)
         self.thread.setName('ArduinoCommThread for {}'.format(self.port))
         self.thread.start()
 
@@ -60,7 +61,7 @@ class ArduinoCommThread(Thread):
     HEARTBEAT_TIMEOUT = timedelta(seconds=10)
     expected_heartbeat_by = datetime.now()
     next_heartbeat_time = datetime.now()
-    HEARTBEAT_INTERVAL = timedelta(seconds=10)
+    HEARTBEAT_INTERVAL = timedelta(seconds=3)
 
     def __init__(self, cxn, arduino_comm, event_callback, register_callback, deregister_callback,
                  connection_timeout=60000, debug=False):

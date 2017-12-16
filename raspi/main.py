@@ -37,14 +37,14 @@ class BOCSMain:
 
     outputs = {}
 
-    def __init__(self, telemetry_server=None, sound_server=None):
+    def __init__(self, telemetry_server=None, sound_server=None, debug=False):
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
         available_ports = BOCSMain.get_available_serial_ports()
         for port in available_ports:
             # Try to register each available port as an Arduino
             try:
-                ArduinoComm(self.event_fired, self.register_arduino, self.deregister_arduino, port)
+                ArduinoComm(self.event_fired, self.register_arduino, self.deregister_arduino, port, debug=debug)
             except Exception:
                 print('WARNING: Could not connect to {}'.format(port))  # Probably not an Arduino connected at this port
 
@@ -184,5 +184,6 @@ class BOCSState:
 if __name__ == '__main__':
     telemetry_server = environ.get('BOCS_TELEMETRY_SERVER', False)
     sound_server = environ.get('BOCS_SOUND_SERVER', False)
-    bocs = BOCSMain(telemetry_server, sound_server)
+    debug = environ.get('DEBUG', False)
+    bocs = BOCSMain(telemetry_server, sound_server, debug)
     bocs.shutdown()

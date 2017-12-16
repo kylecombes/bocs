@@ -1,0 +1,24 @@
+{
+  "technologies": [
+    {
+      "name": "Arduino",
+      "website": "https://www.arduino.cc/",
+      "logo": "assets/arduino-logo.svg"
+    },
+    {
+      "name": "Python",
+      "website": "https://www.python.org/",
+      "logo": "assets/python-logo.svg"
+    },
+    {
+      "name": "Node.js",
+      "website": "https://nodejs.org/",
+      "logo": "assets/node-logo.svg"
+    },
+    {
+      "name": "React",
+      "website": "https://reactjs.org/",
+      "logo": "assets/react-logo.svg"
+    }
+  ]
+}
