@@ -18,4 +18,4 @@ class RotaryState(IOState):
         self._data['mode'] = mode
 
     def get_arduino_message(self):
-        return 'R' + self._data['mode']
+        return 'C' + self._data['mode']

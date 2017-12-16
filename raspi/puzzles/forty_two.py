@@ -71,12 +71,15 @@ class FortyTwoPuzzle(BOCSPuzzle):
         self.rotary_state.set_mode(RotaryState.TELEGRAPH)
         self.update_io_state(ARDUINO1, self.rotary_state)
 
-        # Incorrect answer blink
+        # Correct input blink
+        self.start_button_correct_blink = StartButtonState()
+        self.start_button_correct_blink.add_blink_frame(True, 100)
+
+        # Incorrect input blink
         self.start_button_incorrect_blink = StartButtonState()
         self.start_button_incorrect_blink.add_blink_frame(True, 200)
         self.start_button_incorrect_blink.add_blink_frame(False, 200)
         self.start_button_incorrect_blink.add_blink_frame(True, 200)
-        self.start_button_incorrect_blink.add_blink_frame(False, 200)
 
 
     def user_input_event_received(self, event):
@@ -129,6 +132,8 @@ class FortyTwoPuzzle(BOCSPuzzle):
                     self.pause(5)
                     self.report_attempt(self.PUZZLE_ID)
                     self.is_solved = True  # Exits this puzzle
+                self.update_io_state(ARDUINO1, self.start_button_correct_blink)
+
 
             else:  # Answer has not been built up properly -- tell player they're wrong and restart
                 print('Closed did not match ({} instead of {})'.format(time_closed, self.CORRECT_SEQUENCE_CLOSED[self.current_pos]))
@@ -148,6 +153,8 @@ class FortyTwoPuzzle(BOCSPuzzle):
             self.last_press_time = datetime.now()
             print('Correct count: ', self.current_correct_count)
             print('')
+
+
 
     def input_matches(self, reading, correct_value):
         """

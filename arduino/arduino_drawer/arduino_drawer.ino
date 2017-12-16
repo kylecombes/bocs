@@ -90,8 +90,6 @@ void checkSerialForMessages() {
 
   if (Serial.available() > 0) {
     String msg = Serial.readString();
-    Serial.print("Read ");
-    Serial.println(msg);
     if (msg == "ba-dump") {
       expectedHeartbeatByTime = millis() + HEARTBEAT_TIMEOUT;
     }

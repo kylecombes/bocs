@@ -3,6 +3,7 @@ from random import randint
 from serial.tools.list_ports import comports
 from os import environ
 from raspi.arduino_comm import ArduinoComm
+from raspi.puzzles.binary_trellis import BinaryTrellis
 from raspi.puzzles.mouse_puzzle import MousePuzzle
 from raspi.puzzles.forty_two import FortyTwoPuzzle
 from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
@@ -24,9 +25,10 @@ class BOCSMain:
     future_arduino_states = {}  # State updates are queued here until the given Arduino is connected
 
     PUZZLE_SETS = [
-        [MousePuzzle],  # TODO Append Trellis game
-        [NothingPuzzle, FrequencyPuzzle],
-        [FortyTwoPuzzle]  # TODO Prepend 7-8-9
+        # [MousePuzzle],  # TODO Append Trellis game
+        # [NothingPuzzle, FrequencyPuzzle],
+        # [FortyTwoPuzzle]  # TODO Prepend 7-8-9
+        [BinaryTrellis]
     ]
     START_PROMPT = StartPrompt
     VICTORY_PUZZLE = VictoryPuzzle
@@ -69,7 +71,7 @@ class BOCSMain:
         Selects the next puzzle set.
         :param allow_repeat: if True, will allow selection of a previously-played puzzle set. If False, no repeating
             allowed.
-            :return True if successfully loaded next puzzle set, False if no more to load
+        :return True if successfully loaded next puzzle set, False if no more to load
         """
         if not allow_repeat:  # Don't allow repeating of puzzle sets
             if len(self.completed_puzzle_sets) == len(self.PUZZLE_SETS):
