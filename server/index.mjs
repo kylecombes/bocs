@@ -34,7 +34,7 @@ const authSource = process.env.BOCS_MONGO_AUTH_SOURCE || 'admin';
 
 function getLatestCompletionStats(db, count) {
     let completions = [];
-    const queryRes = db.collection('attempts').find({ 'guess': { '$exists': false } }).limit(count);
+    const queryRes = db.collection('attempts').find({ 'guess': { '$exists': false } }).sort({datettime: -1}).limit(count);
     queryRes.forEach((completion) => {
         completions.push({
             puzzle_id: completion.puzzle_id,
