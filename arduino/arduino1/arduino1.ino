@@ -1,7 +1,7 @@
 #include "BlinkPattern.h"
 
-// This Arduino interfaces with a 16-character x 2-line LCD, a numeric keypad, an Adafruit Trellis keypad,
-// a keypad door actuation servo, and a telegraph input.
+// This Arduino interfaces with a numeric keypad, an Adafruit Trellis keypad, a start button,
+// an LED start button ring, a keypad door actuation servo, and a telegraph input momentary switch.
 
 //////////////////// ----- BEGIN CONFIGURATION ------ /////////////////////
 // Handshake (pairing) and heartbeat
