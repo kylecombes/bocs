@@ -1,4 +1,5 @@
 #include "BlinkPattern.h"
+#include <Servo.h>
 
 // This Arduino interfaces with a numeric keypad, an Adafruit Trellis keypad, a start button,
 // an LED start button ring, a keypad door actuation servo, and a telegraph input momentary switch.
@@ -64,7 +65,6 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Neces
 
 // ----- Begin keypad door servo config ----- //
 
-#include <Servo.h>
 #define KEYPAD_SERVO_PIN 11    // The pin the servo is connected to on the Arduino
 #define KEYPAD_SERVO_OPEN 120  // The maximum PWM value for the servo
 #define KEYPAD_SERVO_CLOSED 18 // The minimum PWM value for the servo
@@ -85,6 +85,15 @@ unsigned long buttonDepressTime = 0;
 
 // ----- End telegraph button config ----- //
 
+// ----- Begin cube servo config ----- //
+
+#define CUBE_SERVO_PIN 10
+#define CUBE_TELEGRAPH 20
+#define CUBE_TRELLIS 120
+#define CUBE_CLOSED 180
+Servo cubeServo;
+
+// ----- End cube servo config ----- //
 ///////////////////// -----  END CONFIGURATION ----- ////////////////////
 
 
@@ -95,6 +104,10 @@ void setup() {
   // Configure keypad door actuator
   keypadServo.attach(KEYPAD_SERVO_PIN);
   keypadServo.write(KEYPAD_SERVO_CLOSED);
+
+  // Configure cube actuator
+  cubeServo.attach(CUBE_SERVO_PIN);
+  cubeServo.write(CUBE_CLOSED);
 
   // Configure Trellis keypad
   trellis.begin(0x70);
@@ -195,6 +208,23 @@ void checkSerialForMessages() {
     }
     else if (outputId == 'T') { // Set the Trellis LEDs
       parseTrellisBlinkPattern(payload);
+    }
+    else if (outputId == 'c') { // Cube position
+      int pos;
+      switch(payload) {
+        case 0:
+          pos = CUBE_CLOSED;
+          break;
+        case 1:
+          pos = CUBE_TELEGRAPH;
+          break;
+        case 2:
+          pos = CUBE_TRELLIS;
+          break;
+      }
+      cubeServo.write(pos);
+          
+      }
     }
   }
 }

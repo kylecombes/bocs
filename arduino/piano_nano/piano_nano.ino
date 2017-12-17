@@ -18,10 +18,10 @@ const int INNER_LIMIT = 9;
 const int OUTER_LIMIT = 10;
 const int SERVO_PIN = 11;
 #define STOP 90
-#define IN 70
-#define OUT 120
-#define EXTEND_TIME 1000
-#define RETRACT_TIME 1150
+#define IN 80
+#define OUT 110
+//#define EXTEND_TIME 1000
+//#define RETRACT_TIME 1150
 
 Servo myservo;
 

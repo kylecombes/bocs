@@ -7,10 +7,10 @@
 #include <Servo.h>
 
 // Constants
-#define TRIG_PIN 7
-#define ECHO_PIN 6
-#define SWITCH_PIN 13
-#define DISPENSER_PIN 11
+#define TRIG_PIN 6
+#define ECHO_PIN 5
+#define SWITCH_PIN 4
+#define DISPENSER_PIN 3
 
 Servo dispenser;
 
@@ -24,9 +24,9 @@ void setup() { //----------S----------S----------S----------S
   Serial.begin(9600); // Opens serial monitor @ 9600 baud
 
   delay(1000);
-  //testUltrasonicSensor(TRIG_PIN, ECHO_PIN);
+  testUltrasonicSensor(TRIG_PIN, ECHO_PIN);
   //testSwitch(SWITCH_PIN);
-  testDispenser(dispenser);
+  //testDispenser(dispenser);
 }
 
 void loop() { //----------L----------L----------L----------L
@@ -97,10 +97,13 @@ void testSwitch(byte pin) {
 void testDispenser(Servo servo) {
   Serial.println("Testing Dispenser Servo");
   servo.write(0);
+  Serial.println("Writing 0");
   delay(5000);
   servo.write(180);
+  Serial.println("Writing 180");
   delay(5000);
   servo.write(90);
+  Serial.println("Writing 90");
   Serial.println("Servo Test Complete");
 }
 
