@@ -112,12 +112,8 @@ void checkSerialForMessages() {
     char outputId = msg[0];
     String payload = msg.substring(1); // The message payload is everything beyond the output identifier
 
-    if (outputId == 'R') { // Turn start button LED ring on/off
-      if (payload[0] == 'C') {
-        dispenseItem('c');
-      } else if (payload[0] == 'T') {
-        dispenseItem('t');
-      }
+    if (outputId == 'P') { // Prize dispenser
+      dispenseItem(payload[0]);
     }
   }
 }
@@ -131,13 +127,13 @@ float microsecondsToCentimeters(long microseconds) {
 void dispenseItem(char item) {
   // Dependent on which item to dispense, runs the dispensing process on
   // the appropriate servo
-  if (item == 'c') {
-    Serial.println("dispensing candy");
+  if (item == 'C') {
+//    Serial.println("dispensing candy");
     candyServo.write(110);
     delay(2200);
     candyServo.write(90);
-  } else if (item == 't') {
-    Serial.println("dispensing token");
+  } else if (item == 'T') {
+//    Serial.println("dispensing token");
     tokenServo.write(90);
     delay(500);
     tokenServo.write(70);

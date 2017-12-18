@@ -66,4 +66,4 @@ class SevenEightNinePuzzle(BOCSPuzzle):
                 else:  # Digit entry
                     self.guess += str(key)
 
-                self.eink.set_text(self.PROMPT + self.guess)
+                self.eink.set_text('{}\n\n{} {}'.format(self.PROMPT, self.LINE_2_PREFIX, self.guess))

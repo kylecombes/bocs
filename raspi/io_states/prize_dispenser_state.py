@@ -8,7 +8,7 @@ class PrizeDispenserState(IOState):
         self._data['mode'] = ''
 
     def dispense_candy(self):
-        self._data['mode'] = 'c'
+        self._data['mode'] = 'C'
 
     def get_arduino_message(self):
-        return 'R{}'.format(self._data['mode'])
+        return 'P{}'.format(self._data['mode'])
