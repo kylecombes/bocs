@@ -9,6 +9,7 @@ from raspi.puzzles.forty_two import FortyTwoPuzzle
 from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
 from raspi.puzzles.seven_eight_nine_puzzle import SevenEightNinePuzzle
 from raspi.puzzles.start import StartPrompt
+from raspi.puzzles.numriddle_puzzle import NumRiddlePuzzle
 from raspi.puzzles.nothing_puzzle import NothingPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
 from raspi.puzzles.bunker_hill_monument import BunkerHillMonumentPuzzle

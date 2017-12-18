@@ -1,3 +1,4 @@
+from raspi.io_states.start_button_state import StartButtonState
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
 from raspi.available_io import *
@@ -24,6 +25,12 @@ class VictoryPuzzle(BOCSPuzzle):
 
         # Let’s display the image bocs-start.png on the e-ink display
         self.eink.set_image('victory-qr.png')
+
+        # Blink the start button to prompt restarting
+        start_button_state = StartButtonState(repeat_pattern=True)
+        start_button_state.add_blink_frame(True, 800)
+        start_button_state.add_blink_frame(False, 800)
+        self.update_io_state(ARDUINO1, start_button_state)
 
     def user_input_event_received(self, event):
         """

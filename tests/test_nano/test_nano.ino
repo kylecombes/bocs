@@ -32,8 +32,8 @@ void setup() {
   Serial.begin(9600);
 
   //Run test functions
-  testKeyboard();
   testSlide(EXTENDED_LIMIT_PIN, RETRACTED_LIMIT_PIN);
+  testKeyboard();
 }
 
 void loop() {
@@ -63,18 +63,19 @@ void testKeyboard() {
 
 void testSlide(byte extend, byte retract) {
   Serial.println("Testing Servo");
-  Serial.println("Extending");
-  slideServo.write(135);
+  
+  Serial.println("Retracting");
+  slideServo.write(80);
   while(true) {
-    if (digitalRead(extend)) {
+    if (digitalRead(retract)) {
       break;
     }
   }
-
-  Serial.println("Retracting");
-  slideServo.write(45);
+  
+  Serial.println("Extending");
+  slideServo.write(100);
   while(true) {
-    if (digitalRead(retract)) {
+    if (digitalRead(extend)) {
       break;
     }
   }

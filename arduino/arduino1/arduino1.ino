@@ -125,7 +125,7 @@ void setup() {
   // Configure cube servo
   cubeServo.attach(CUBE_SERVO_PIN);
   cubeServo.write(CUBE_CLOSED);
-  
+
   // Configure computer comms
   Serial.begin(9600); // Initialize serial with baudrate of 9600 bps
 
