@@ -1,3 +1,4 @@
+from raspi.io_states.prize_dispenser_state import PrizeDispenserState
 from raspi.io_states.start_button_state import StartButtonState
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
@@ -31,6 +32,11 @@ class VictoryPuzzle(BOCSPuzzle):
         start_button_state.add_blink_frame(True, 800)
         start_button_state.add_blink_frame(False, 800)
         self.update_io_state(ARDUINO1, start_button_state)
+
+        # Dispense some candy
+        dispenser_state = PrizeDispenserState()
+        dispenser_state.dispense_candy()
+        self.update_io_state(DRAWER, dispenser_state)
 
     def user_input_event_received(self, event):
         """
