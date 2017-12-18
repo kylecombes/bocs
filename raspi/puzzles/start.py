@@ -28,7 +28,7 @@ class StartPrompt(BOCSPuzzle):
     def key_pressed(self, event):
         if event.id == EventType.START_BUTTON_PRESS:
             # Play Mac startup chime
-            self.play_sound('Mac-chime.wav')
+            self.play_sound('StartupNiceSound.m4a')
 
             # Turn off start button LED
             start_button_led_state = StartButtonState()

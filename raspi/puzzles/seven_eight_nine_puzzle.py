@@ -1,17 +1,17 @@
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
+from raspi.io_states.keypad_state import KeypadState
 from raspi.available_io import *
 
 
-class NumRiddlePuzzle(BOCSPuzzle):
+class SevenEightNinePuzzle(BOCSPuzzle):
 
-    PUZZLE_ID = '789 PUZZLE'  # Used by stat server
+    PUZZLE_ID = 'jul jnf fvk'  # Used by stat server
 
     PROMPT = "jul jnf fvk nsenvq bs frira?"
     LINE_2_PREFIX = "Input: "
     guess = ""
     ANSWER = "789"
-    is_solved = False
 
     def __init__(self, init_bundle, register_callback):
         """
@@ -26,7 +26,15 @@ class NumRiddlePuzzle(BOCSPuzzle):
         # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)
 
+        # Show the keypad
+        self.keypad_state = KeypadState(visible=True)
+        self.update_io_state(ARDUINO1, self.keypad_state)
+
+        # Display the prompt on the display
         self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+
+        # Play the prompt audio
+        self.play_sound('789Riddle.m4a')
 
     def user_input_event_received(self, event):
         """

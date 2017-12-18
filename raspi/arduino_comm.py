@@ -33,8 +33,7 @@ class ArduinoComm:
 
     def start_listening(self):
         self.thread = ArduinoCommThread(self.cxn, self, self.event_callback, self.register_callback,
-                                        self.deregister_callback, debug=self.debug)
-        self.thread.setName('ArduinoCommThread for {}'.format(self.port))
+                                        self.deregister_callback, self.port, debug=self.debug)
         self.thread.start()
 
     def stop_listening(self):
@@ -64,7 +63,7 @@ class ArduinoCommThread(Thread):
     HEARTBEAT_INTERVAL = timedelta(seconds=3)
 
     def __init__(self, cxn, arduino_comm, event_callback, register_callback, deregister_callback,
-                 connection_timeout=60000, debug=False):
+                 port_name, connection_timeout=60000, debug=False):
         Thread.__init__(self)
         self.cxn = cxn
         self.arduino_comm = arduino_comm
@@ -74,6 +73,8 @@ class ArduinoCommThread(Thread):
         self.connection_timeout = timedelta(milliseconds=connection_timeout)
         self.abort_time = datetime.now() + timedelta(milliseconds=connection_timeout)
         self.debug = debug
+        self.port_name = port_name
+        self.setName('ArduinoCommThread for {}'.format(port_name))
 
     def run(self):
 
@@ -101,6 +102,7 @@ class ArduinoCommThread(Thread):
                             self.state = CONNECTED
                             self.register_callback(self.arduino_comm, self.device_name)
                             print("Connected to " + self.device_name)
+                            self.setName('ArduinoCommThread for {} on {}'.format(self.device_name, self.port_name))
                             self.expected_heartbeat_by = now + self.HEARTBEAT_TIMEOUT
                         else:  # Arduino is being difficult. Keep introducing yourself.
                             self.cxn.write(b'Hello from computer\n')

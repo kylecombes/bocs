@@ -12,20 +12,24 @@ class ServerComm:
     CONNECTED = 2
     CLOSED = 3
 
-    def __init__(self, uri, debug=False):
+    def __init__(self, uri, name=None, debug=False):
         """
         Initializes a new connection to the BOCS statistics server.
         :param uri: the URI of the server (e.g. ws://localhost:8000)
+        :param name: a name to identify this server connection when debugging
         """
         if debug:
-            print('Connecting to WebSocket server at {}'.format(uri))
-        self.connection = ServerCommThread(uri, self.message_received, debug)
+            print('Connecting to WebSocket server {} at {}'.format(name, uri))
+        self.connection = ServerCommThread(uri, self.message_received, name, debug)
         self.connection.start()
+        self.name = name
+        self.debug = debug
 
     def get_state(self):
         return self.connection.state
 
     def message_received(self, message):
+        print('Messaged received by {}:'.format(self.name))
         print(message)
 
     def send_data(self, data):
@@ -34,13 +38,15 @@ class ServerComm:
         :param data: a dictionary to send (will be converted to JSON)
         :return: True if sent successfully, False otherwise
         """
+        if self.debug:
+            print('Transmitting {} to {}'.format(data, self.name))
         self.connection.send_data(data)
 
 
 class ServerCommThread(Thread):
 
-    def __init__(self, uri, message_received_callback, debug=False):
-        Thread.__init__(self, name='BOCS WebSocket connection')
+    def __init__(self, uri, message_received_callback, name, debug=False):
+        Thread.__init__(self, name='BOCS WebSocket connection {}'.format(name))
 
         websocket.enableTrace(debug)
 
@@ -62,11 +68,11 @@ class ServerCommThread(Thread):
 
     def on_error(self, ws, error):
         self.state = ServerComm.CLOSED
-        print('Server error: ' + error.strerror)
+        print('Server {} error: {}'.format(self.name, str(error)))
 
     def on_close(self, message):
         self.state = ServerComm.CLOSED
-        print('Server connection closed')
+        print('Server {} connection closed'.format(self.name))
 
     def send_data(self, data):
         """

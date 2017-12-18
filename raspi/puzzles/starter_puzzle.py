@@ -7,8 +7,6 @@ class PuzzleName(BOCSPuzzle):
 
     PUZZLE_ID = 'DEFINE ME!'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
 
-    is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
-
     def __init__(self, init_bundle, register_callback):
         """
         Runs once, when the puzzle is first started.

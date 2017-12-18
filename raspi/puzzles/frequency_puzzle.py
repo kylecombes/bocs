@@ -8,9 +8,18 @@ from random import *
 class FrequencyPuzzle(BOCSPuzzle):
 
     PUZZLE_ID = 'Musical Numbers'  # A unique ID (can be anything) to use when reporting puzzle stats to the server
-    PROMPT = '392-415-349-440-392-370\n(G, G#, F, A, G, F#)\n\nInput: '
+    PROMPT = '392-415-349-440-392-370\n(G, G#, F, A, G, F#)\n\n'
+    secondary_prompt = ''
+    TERTIARY_PROMPT = 'Input: '
     ANSWER = '341532'
     entered_input = ''
+
+    HINTS = [
+        'Perhaps your human ear hears a sound, but I only hear numbers',
+        'High notes, low notes, it’s all just a different number to me',
+        'Some people say A is 432, but that’s ridiculous'
+    ]
+    hint_index = 0
 
     is_solved = False  # Set this to True when you want the BOCS to progress to the next puzzle
 
@@ -24,7 +33,7 @@ class FrequencyPuzzle(BOCSPuzzle):
         # Perform some standard initialization defined by the BOCSPuzzle base class
         BOCSPuzzle.__init__(self, init_bundle)
 
-        # Register our `event_received` function to be called whenever there is a BOCS input event (e.g. key press)
+        # Register our `user_input_event_received` function to be called whenever there is a BOCS input event (e.g. key press)
         register_callback(self.user_input_event_received)
 
         # Let’s display the image bocs-start.png on the e-ink display
@@ -44,42 +53,52 @@ class FrequencyPuzzle(BOCSPuzzle):
         associated with the event, e.g. which key/number) and `options` (extra data, usually empty)
         """
 
-        if event.data == '6':  # Backspace
-            self.entered_input = self.entered_input[0:-1]
+        if event.id == EventType.PIANO_KEYBOARD_CHANGE:
 
-        elif event.data == '7':  # Submit
+            if event.data == '6':  # Backspace
+                self.entered_input = self.entered_input[0:-1]
 
-            if self.entered_input == self.ANSWER:  # Correct answer input
-                self.report_attempt(self.PUZZLE_ID)
-                self.piano_state.set_visible(False)
-                self.update_io_state(PIANO, self.piano_state)
-                self.eink.set_text('Good job!')
-                self.pause(3)
-                self.is_solved = True
+            elif event.data == '7':  # Submit
 
-            else:  # Incorrect answer submitted
-                self.report_attempt(self.PUZZLE_ID, self.entered_input)
-                self.eink.set_text("Sorry, that's incorrect")
-                self.pause(3)
-                self.eink.set_text(self.PROMPT)
-                self.entered_input = ''
+                if self.entered_input == self.ANSWER:  # Correct answer input
+                    self.report_attempt(self.PUZZLE_ID)
+                    self.piano_state.set_visible(False)
+                    self.update_io_state(PIANO, self.piano_state)
+                    self.eink.set_text('Good job!')
+                    self.pause(3)
+                    self.is_solved = True
 
-        # elif event.data == self.ANSWER[self.pos]:  # Entered next number in correct sequence
-        else:
-            self.entered_input += event.data
-        #     if self.pos == 2:                      #check whether to play audio
-        #         #TODO play correct2 audio clip      #yes - Play audio
-        #         pass
-        #     elif self.pos == 4:
-        #         #TODO play correct4 audio clip
-        #         pass
-        # else:                                       #no - reset code input
-        #     if random() >= 0.5:     #check whether to play audio (random)
-        #         #TODO play random incorrect audio clip
-        #         pass
+                else:  # Incorrect answer submitted
+                    self.report_attempt(self.PUZZLE_ID, self.entered_input)
+                    self.eink.set_text("Sorry, that's incorrect")
+                    self.pause(3)
+                    self.eink.set_text(self.PROMPT)
+                    self.entered_input = ''
 
-        # if self.pos == 6:                         #if code is complete
-        # TODO play finished audio clip          #yes - puzzle is finished, play audio, change screen
-        #no - do nothing
+            # elif event.data == self.ANSWER[self.pos]:  # Entered next number in correct sequence
+            else:
+                self.entered_input += event.data
+            #     if self.pos == 2:                      #check whether to play audio
+            #         #TODO play correct2 audio clip      #yes - Play audio
+            #         pass
+            #     elif self.pos == 4:
+            #         #TODO play correct4 audio clip
+            #         pass
+            # else:                                       #no - reset code input
+            #     if random() >= 0.5:     #check whether to play audio (random)
+            #         #TODO play random incorrect audio clip
+            #         pass
+
+            # if self.pos == 6:                         #if code is complete
+            # TODO play finished audio clip          #yes - puzzle is finished, play audio, change screen
+            # no - do nothing
+
+        elif event.id == EventType.START_BUTTON_PRESS:  # Give a hint
+            if self.hint_index > len(self.HINTS):
+                self.hint_index = 0
+
+            hint = self.HINTS[self.hint_index]
+
+            self.eink.set_text('Hint:\n\n{}'.format(hint))
 
         self.eink.set_text(self.PROMPT + self.entered_input)

@@ -1,4 +1,15 @@
+#include <Adafruit_Trellis.h>
 #include "BlinkPattern.h"
+#include "Keypad.h"
+#include <Servo.h>
+#include "TrellisBlinkPattern.h"
+
+// PINOUT
+// Pins 2-8 used by keypad
+#define TELEGRAPH_BUTTON_PIN 9
+#define CUBE_SERVO_PIN 10
+#define KEYPAD_SERVO_PIN 11
+#define START_BUTTON_PIN 12
 
 // This Arduino interfaces with a numeric keypad, an Adafruit Trellis keypad, a start button,
 // an LED start button ring, a keypad door actuation servo, and a telegraph input momentary switch.
@@ -23,7 +34,6 @@ BlinkDef startButtonBlinkPattern;
 
 
 // ----- Begin start button config ----- //
-#define START_BUTTON_PIN 12
 short lastStartButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
@@ -33,8 +43,6 @@ unsigned long lastStartButtonDebounceTime = millis(); // The last time the butto
 
 
 // ----- Begin Adafruit Trellis config ----- //
-#include <Adafruit_Trellis.h>
-#include "TrellisBlinkPattern.h"
 Adafruit_Trellis trellis = Adafruit_Trellis();
 #define TRELLIS_NUM_BUTTONS 16 // If you change this to be more than 16, you'll also need to change the data type
                                // the values are encoded using from short to something else.
@@ -44,8 +52,6 @@ TrellisBlinkPattern trellisBlinkPattern;
 
 
 // ----- Begin numeric keypad config ----- //
-
-#include "Keypad.h"
 
 #define ROWS 4 // Number of rows on keypad
 #define COLS 3 // Number of columns on keypad
@@ -64,8 +70,6 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Neces
 
 // ----- Begin keypad door servo config ----- //
 
-#include <Servo.h>
-#define KEYPAD_SERVO_PIN 11    // The pin the servo is connected to on the Arduino
 #define KEYPAD_SERVO_OPEN 120  // The maximum PWM value for the servo
 #define KEYPAD_SERVO_CLOSED 18 // The minimum PWM value for the servo
 Servo keypadServo;
@@ -75,7 +79,6 @@ Servo keypadServo;
 
 // ----- Begin telegraph button config ----- //
 
-#define TELEGRAPH_BUTTON_PIN 9
 short lastTelegraphButtonState = LOW;
 //#define TELEGRAPH_BUTTON_READ_DELAY 20 // (ms) If we read the button too frequently, it doesn't work
 //unsigned long lastTelegraphButtonReadTime = 0;
@@ -84,6 +87,16 @@ unsigned long lastTelegraphDebounceTime = 0; // The last time the button state c
 unsigned long buttonDepressTime = 0;
 
 // ----- End telegraph button config ----- //
+
+
+// ----- Begin cube servo config ----- //
+
+Servo cubeServo;
+#define CUBE_TELEGRAPH 20
+#define CUBE_CLOSED 112
+#define CUBE_TRELLIS 180
+
+// ----- End cube servo config ----- //
 
 ///////////////////// -----  END CONFIGURATION ----- ////////////////////
 
@@ -108,6 +121,10 @@ void setup() {
   // Configure start button LED
   pinMode(START_BUTTON_LED_PIN, OUTPUT);
   updateStartButtonLEDState();
+
+  // Configure cube servo
+  cubeServo.attach(CUBE_SERVO_PIN);
+  cubeServo.write(CUBE_CLOSED);
   
   // Configure computer comms
   Serial.begin(9600); // Initialize serial with baudrate of 9600 bps
@@ -195,6 +212,14 @@ void checkSerialForMessages() {
     }
     else if (outputId == 'T') { // Set the Trellis LEDs
       parseTrellisBlinkPattern(payload);
+    } else if (outputId == 'C') { // Rotate cube
+      if (payload[0] == 'T') {
+        cubeServo.write(CUBE_TELEGRAPH);
+      } else if (payload[0] == 'C') {
+        cubeServo.write(CUBE_CLOSED);
+      } else if (payload[0] == 'A') {
+        cubeServo.write(CUBE_TRELLIS);
+      }
     }
   }
 }

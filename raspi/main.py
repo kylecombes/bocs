@@ -7,6 +7,7 @@ from raspi.puzzles.binary_trellis import BinaryTrellis
 from raspi.puzzles.mouse_puzzle import MousePuzzle
 from raspi.puzzles.forty_two import FortyTwoPuzzle
 from raspi.puzzles.frequency_puzzle import FrequencyPuzzle
+from raspi.puzzles.seven_eight_nine_puzzle import SevenEightNinePuzzle
 from raspi.puzzles.start import StartPrompt
 from raspi.puzzles.nothing_puzzle import NothingPuzzle
 from raspi.puzzles.birthday_paradox import BirthdayParadoxPuzzle
@@ -28,7 +29,7 @@ class BOCSMain:
         # [MousePuzzle],  # TODO Append Trellis game
         # [NothingPuzzle, FrequencyPuzzle],
         # [FortyTwoPuzzle]  # TODO Prepend 7-8-9
-        [BinaryTrellis]
+        [SevenEightNinePuzzle, BinaryTrellis]
     ]
     START_PROMPT = StartPrompt
     VICTORY_PUZZLE = VictoryPuzzle
@@ -38,6 +39,8 @@ class BOCSMain:
     outputs = {}
 
     def __init__(self, telemetry_server=None, sound_server=None, debug=False):
+        self.debug = debug
+
         # Initialize stuff
         self.state = BOCSState(BOCSState.INITIALIZING)
         available_ports = BOCSMain.get_available_serial_ports()
@@ -49,10 +52,10 @@ class BOCSMain:
                 print('WARNING: Could not connect to {}'.format(port))  # Probably not an Arduino connected at this port
 
         # Connect to the stat/monitoring server
-        self.telemetry_server = ServerComm(telemetry_server, True) if telemetry_server else None
+        self.telemetry_server = ServerComm(telemetry_server, 'telemetry', debug) if telemetry_server else None
 
         # Connect to the sound-playing server, if desired
-        self.sound_server = ServerComm(sound_server) if sound_server else None
+        self.sound_server = ServerComm(sound_server, 'sound', debug) if sound_server else None
 
         self.puzzles = self.PUZZLE_SETS[randint(0, len(self.PUZZLE_SETS)-1)]
 
@@ -118,9 +121,12 @@ class BOCSMain:
             output.stop_listening()
 
     def update_io_state(self, io_name, new_state):
+        print('Update IO called')
         if io_name in self.outputs:  # Desired Arduino is currently connected
+            print('Transmitting update:', new_state)
             self.transmit_io_state_update(io_name, new_state)
         else:  # Desired Arduino not currently connected, so save message to be sent upon connection
+            print('Queuing update:', new_state)
             if io_name not in self.future_arduino_states:  # First attempt to update this particular Arduino's state
                 self.future_arduino_states[io_name] = []  # Initialize new empty queue
             self.future_arduino_states[io_name].append(new_state)  # Queue the update

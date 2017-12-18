@@ -1,3 +1,4 @@
+from raspi.io_states.cube_state import CubeState
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.io_states.trellis_state import TrellisState, TrellisLightConfig
 from raspi.arduino_comm import ArduinoCommEventType as EventType
@@ -16,6 +17,9 @@ class BinaryTrellis(BOCSPuzzle):
         BOCSPuzzle.__init__(self, init_bundle)
 
         self.eink.set_text('What is 8 + 2?')
+
+        self.cube_state = CubeState(mode=CubeState.TRELLIS)
+        self.update_io_state(ARDUINO1, self.cube_state)
 
         self.trellis_state = TrellisState(repeat_pattern=True)
         self.trellis_light_config = TrellisLightConfig()
@@ -44,6 +48,9 @@ class BinaryTrellis(BOCSPuzzle):
                     self.trellis_state.add_blink_frame(correct_config, 1500)
                     self.update_io_state(ARDUINO1, self.trellis_state)
                     self.eink.set_text('Correct!')
+                    # Hide the Trellis
+                    self.cube_state.set_mode(CubeState.CLOSED)
+                    self.update_io_state(ARDUINO1, self.cube_state)
                     self.pause(5)
                     self.is_solved = True
                 else:

@@ -11,15 +11,10 @@ unsigned long nextBroadcastTime = 0;  // Used for doing handshake
 // Go back into handshake mode after 3 seconds of no heartbeat from computer
 unsigned long expectedHeartbeatByTime = 0;
 #define HEARTBEAT_TIMEOUT 10000
-Servo rotaryServo;
-#define ROTARY_TELEGRAPH 20
-#define ROTARY_CLOSED 120
-#define ROTARY_TRELLIS 180
 
 void setup() {
   // initialize serial communication:
   Serial.begin(9600);
-  rotaryServo.attach(9);
 
   pinMode(pingPin, OUTPUT);
   pinMode(echoPin, INPUT);
@@ -98,15 +93,6 @@ void checkSerialForMessages() {
     char outputId = msg[0];
     String payload = msg.substring(1); // The message payload is everything beyond the output identifier
 
-    if (outputId == 'R') { // Turn start button LED ring on/off
-      if (payload[0] == 'T') {
-        rotaryServo.write(ROTARY_TELEGRAPH);
-      } else if (payload[0] == 'C') {
-        rotaryServo.write(ROTARY_CLOSED);
-      } else if (payload[0] == 'A') {
-        rotaryServo.write(ROTARY_TRELLIS);
-      }
-    }
   }
 }
 float microsecondsToCentimeters(long microseconds) {
