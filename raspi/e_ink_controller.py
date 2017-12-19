@@ -56,7 +56,7 @@ class EInkController:
                 screen.AddImg(img, img_xpos, img_ypos, (img_width, img_height))
 
             if text:
-                screen.AddText(text, text_xpos, text_ypos)
+                screen.AddText(text, text_xpos, text_ypos, size=16)
 
             # Write the updates to the display
             screen.WriteAll()

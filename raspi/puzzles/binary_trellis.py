@@ -51,7 +51,7 @@ class BinaryTrellis(BOCSPuzzle):
                     # Hide the Trellis
                     self.cube_state.set_mode(CubeState.CLOSED)
                     self.update_io_state(ARDUINO1, self.cube_state)
-                    self.pause(5)
+                    self.pause(3)
                     self.is_solved = True
                 else:
                     self.trellis_state.clear_pattern()

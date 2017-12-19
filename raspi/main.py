@@ -26,10 +26,10 @@ class BOCSMain:
     future_arduino_states = {}  # State updates are queued here until the given Arduino is connected
 
     PUZZLE_SETS = [
-        # [MousePuzzle],  # TODO Append Trellis game
+        [BirthdayParadoxPuzzle, MousePuzzle],  # TODO Append Trellis game
         # [NothingPuzzle, FrequencyPuzzle],
-        # [FortyTwoPuzzle]  # TODO Prepend 7-8-9
-        [SevenEightNinePuzzle, BinaryTrellis]
+        [FortyTwoPuzzle, BunkerHillMonumentPuzzle, NothingPuzzle],  # TODO Prepend 7-8-9
+        [FortyTwoPuzzle, BinaryTrellis, SevenEightNinePuzzle]
     ]
     START_PROMPT = StartPrompt
     VICTORY_PUZZLE = VictoryPuzzle

@@ -57,7 +57,7 @@ class SevenEightNinePuzzle(BOCSPuzzle):
                 else:
                     self.report_attempt(self.PUZZLE_ID, self.guess)
                     self.eink.set_text("Sorry, that's incorrect!")
-                    self.pause(5)
+                    self.pause(3)
                     self.eink.set_text(self.PROMPT)
 
             else:

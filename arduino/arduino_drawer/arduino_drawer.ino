@@ -49,7 +49,7 @@ void loop() {
       // SENSOR
       delay(500); // Let readings stabilize
       short duration = (takeReading(pingPin, echoPin) + takeReading(pingPin, echoPin) + takeReading(pingPin, echoPin))/3;
-      float cm = microsecondsToCentimeters(duration);
+      float cm = -(microsecondsToCentimeters(duration) - 9.4);
 
       if (testSwitch == 1) { // Door open
         Serial.print("{\"event_id\": \"3\", \"data\": \"");
@@ -121,7 +121,7 @@ float microsecondsToCentimeters(long microseconds) {
   // The speed of sound is 340 m/s or 29 microseconds per centimeter.
   // The ping travels out and back, so to find the distance of the object we
   // take half of the distance travelled.
-  return ((float)microseconds) / 14.5;
+  return ((float)microseconds) / 58;
 }
 
 void dispenseItem(char item) {

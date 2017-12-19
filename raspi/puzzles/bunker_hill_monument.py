@@ -1,6 +1,9 @@
+from raspi.io_states.keypad_state import KeypadState
+
 from raspi.puzzles.puzzle import BOCSPuzzle
 from raspi.arduino_comm import ArduinoCommEventType as EventType
 import time
+from raspi.available_io import *
 
 
 class BunkerHillMonumentPuzzle(BOCSPuzzle):
@@ -9,7 +12,18 @@ class BunkerHillMonumentPuzzle(BOCSPuzzle):
     LINE_2_PREFIX = "Input: "
     guess = ""
     ANSWER = "294"
-    is_solved = False
+
+    def __init__(self, init_bundle, register_callback):
+        BOCSPuzzle.__init__(self, init_bundle)
+        # Set the initial states of the inputs and outputs we'll be using
+        self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
+
+        # Subscribe to numeric keypad button press events
+        register_callback(self.key_pressed)
+
+        # Show keypad
+        self.keypad_state = KeypadState(visible=True)
+        self.update_io_state(ARDUINO1, self.keypad_state)
 
     def key_pressed(self, event):
 
@@ -35,10 +49,3 @@ class BunkerHillMonumentPuzzle(BOCSPuzzle):
             self.eink.set_text('{}\n\n{}'.format(self.PROMPT, line2))
             time.sleep(pause)
 
-    def __init__(self, init_bundle, register_callback):
-        BOCSPuzzle.__init__(self, init_bundle)
-        # Set the initial states of the inputs and outputs we'll be using
-        self.eink.set_text('{}\n\n{}'.format(self.PROMPT, self.LINE_2_PREFIX))
-
-        # Subscribe to numeric keypad button press events
-        register_callback(self.key_pressed)

@@ -15,15 +15,9 @@ class FortyTwoPuzzle(BOCSPuzzle):
 
     HINTS = ['']
 
-    PROMPT = "Here is something you may recognize.\n" \
-             "After all, this truth was discovered by one of your kind.\n\n" \
-             "As you travel across the stars,\n" \
-             "Finding rides as they come,\n" \
-             "Never forget this truth or ours,\n" \
-             "For there is only one.\n\n" \
-             "Answer this question right and true,\n" \
+    PROMPT = "Answer this question right and true,\n" \
              "And I may have some more respect for you.\n" \
-             "What is 6x9?"
+             "What do you get when you multiply 6 by 9?"
     RESPONSES = [
         "And here I thought you had potential.\nPerhaps you are simply pestilential.\n\nTry again.",
         "That is really too bad.\nMaybe it is not intelligence they said you humans had.",
@@ -65,6 +59,8 @@ class FortyTwoPuzzle(BOCSPuzzle):
         # Show keypad
         self.keypad_state = KeypadState(visible=True)
         self.update_io_state(ARDUINO1, self.keypad_state)
+
+        self.play_sound('SixByNine.m4a')
 
     def user_input_event_received(self, event):
         """
